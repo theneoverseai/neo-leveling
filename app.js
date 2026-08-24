@@ -13,12 +13,6 @@ const RANKS = [
   { letter: 'S', floor: 8000, ceil: null, color: '#F0E9C8' }
 ];
 
-const CLASSES = [
-  { id: 'Vanguard', tag: 'Push Focus', blurb: 'Leads with force. Built on pressing strength and control.' },
-  { id: 'Sentinel', tag: 'Pull Focus', blurb: 'Holds the line. Built on grip, back, and pulling power.' },
-  { id: 'Ranger', tag: 'Mobility Focus', blurb: 'Moves first. Built on range, joint health, and recovery.' }
-];
-
 const DAY_TYPE_BY_DOW = ['Rest', 'Push', 'Pull', 'Legs', 'Rest', 'Push', 'Pull']; // Sun..Sat
 
 const ITEM_XP = 10;
@@ -320,7 +314,6 @@ function yesterdayStr(dateStr) {
 
 function defaultState() {
   return {
-    className: null,
     xp: 0,
     streak: 0,
     lastFullCompletionDate: null,
@@ -443,12 +436,6 @@ function addRecord(values) {
   renderRecords();
 }
 
-function selectClass(id) {
-  state.className = id;
-  saveState();
-  renderAll();
-}
-
 function resetAll() {
   localStorage.removeItem(STORAGE_KEY);
   state = defaultState();
@@ -467,7 +454,6 @@ function renderStatus() {
   sigil.style.setProperty('--sigil-color', rank.color);
 
   document.getElementById('rankName').textContent = `Rank ${rank.letter}`;
-  document.getElementById('className').textContent = state.className || '—';
   document.getElementById('levelValue').textContent = level;
   document.getElementById('streakValue').textContent = state.streak;
   document.getElementById('totalXpValue').textContent = state.xp.toLocaleString();
@@ -774,17 +760,14 @@ let manualWizardOpen = false;
 function renderGates() {
   const login = document.getElementById('loginGate');
   const wizard = document.getElementById('wizardGate');
-  const classGate = document.getElementById('classGate');
   const app = document.getElementById('app');
 
   const showLogin = !manualWizardOpen && !state.hasSeenLogin;
   const showWizard = manualWizardOpen || (!showLogin && !state.hasOnboarded);
-  const showClass = !showLogin && !showWizard && !state.className;
-  const showApp = !showLogin && !showWizard && !!state.className;
+  const showApp = !showLogin && !showWizard;
 
   login.classList.toggle('is-open', showLogin);
   wizard.classList.toggle('is-open', showWizard);
-  classGate.classList.toggle('is-open', showClass);
   app.classList.toggle('is-hidden', !showApp);
 
   if (showWizard && wizardDraft === null) startWizard();
@@ -936,7 +919,7 @@ function openWizardManually() {
 
 function renderAll() {
   renderGates();
-  if (!state.hasSeenLogin || !state.hasOnboarded || !state.className) return;
+  if (!state.hasSeenLogin || !state.hasOnboarded) return;
   renderStatus();
   renderQuest();
   renderLog();
@@ -948,18 +931,6 @@ function renderAll() {
 
 function init() {
   rolloverDayIfNeeded();
-
-  document.getElementById('classGate').innerHTML = CLASSES.map((c) => `
-    <button class="class-card" data-class="${c.id}">
-      <span class="class-name">${c.id}</span>
-      <span class="class-tag">${c.tag}</span>
-      <span class="class-blurb">${c.blurb}</span>
-    </button>
-  `).join('') + `<p class="class-note">This is a title only. It does not change your program.</p>`;
-
-  document.getElementById('classGate').querySelectorAll('[data-class]').forEach((btn) => {
-    btn.addEventListener('click', () => selectClass(btn.getAttribute('data-class')));
-  });
 
   document.querySelectorAll('.nav-btn').forEach((btn) => {
     btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
