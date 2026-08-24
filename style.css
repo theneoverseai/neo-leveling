@@ -529,3 +529,222 @@ button, input {
 .class-tag { font-family: var(--font-mono); font-size: 11px; color: var(--violet); text-transform: uppercase; letter-spacing: 0.05em; }
 .class-blurb { font-size: 13px; color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
 .class-note { text-align: center; font-size: 11.5px; color: var(--text-dim); margin-top: 8px; }
+
+/* ============================== LOGIN GATE ============================== */
+
+.login-gate {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  overflow: hidden;
+}
+.login-gate.is-open { display: block; }
+
+.login-bg { position: absolute; inset: 0; overflow: hidden; }
+
+.login-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.35;
+  animation: orbDrift 14s ease-in-out infinite;
+}
+.login-orb-1 {
+  width: 60vw; height: 60vw;
+  background: var(--violet);
+  top: -18vw; left: -14vw;
+  animation-delay: 0s;
+}
+.login-orb-2 {
+  width: 50vw; height: 50vw;
+  background: var(--gold);
+  bottom: -16vw; right: -12vw;
+  opacity: 0.22;
+  animation-delay: -6s;
+}
+@keyframes orbDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4%, 3%) scale(1.08); }
+}
+
+.login-scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(180deg, transparent, rgba(156, 140, 240, 0.06), transparent);
+  animation: scanSweep 6s linear infinite;
+}
+@keyframes scanSweep {
+  0% { top: -120px; }
+  100% { top: 100%; }
+}
+
+.login-particles { position: absolute; inset: 0; }
+.login-particles span {
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--violet);
+  opacity: 0;
+  animation: particleFloat 7s ease-in infinite;
+}
+.login-particles span:nth-child(1) { left: 12%; animation-delay: 0.2s; }
+.login-particles span:nth-child(2) { left: 24%; animation-delay: 1.8s; background: var(--gold); }
+.login-particles span:nth-child(3) { left: 38%; animation-delay: 3.1s; }
+.login-particles span:nth-child(4) { left: 52%; animation-delay: 0.9s; background: var(--gold); }
+.login-particles span:nth-child(5) { left: 65%; animation-delay: 4.2s; }
+.login-particles span:nth-child(6) { left: 77%; animation-delay: 2.4s; }
+.login-particles span:nth-child(7) { left: 88%; animation-delay: 5.1s; background: var(--gold); }
+.login-particles span:nth-child(8) { left: 95%; animation-delay: 1.2s; }
+@keyframes particleFloat {
+  0% { bottom: -4%; opacity: 0; transform: translateX(0); }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.5; }
+  100% { bottom: 104%; opacity: 0; transform: translateX(14px); }
+}
+
+.login-content {
+  position: relative;
+  z-index: 2;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px;
+  text-align: center;
+}
+
+.login-sigil-ring {
+  position: relative;
+  width: 132px; height: 132px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 22px;
+}
+.login-sigil-hex {
+  position: absolute; inset: 0;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: conic-gradient(from 0deg, var(--violet), transparent 30%, transparent 70%, var(--violet));
+  animation: hexSpin 10s linear infinite;
+  filter: drop-shadow(0 0 18px rgba(156, 140, 240, 0.35));
+}
+.login-sigil-hex::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: var(--bg);
+}
+@keyframes hexSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.login-sigil-diamond {
+  position: relative;
+  width: 26px; height: 26px;
+  background: var(--gold);
+  transform: rotate(45deg);
+  border-radius: 4px;
+  animation: sigilPulse 2.4s ease-in-out infinite;
+  box-shadow: 0 0 24px rgba(214, 182, 119, 0.55);
+}
+@keyframes sigilPulse {
+  0%, 100% { transform: rotate(45deg) scale(1); }
+  50% { transform: rotate(45deg) scale(1.12); }
+}
+
+.login-title {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, var(--text) 30%, var(--violet) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.login-subtitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-top: 4px;
+  margin-bottom: 34px;
+  animation: subtitleFlicker 3.2s ease-in-out infinite;
+}
+@keyframes subtitleFlicker {
+  0%, 92%, 100% { opacity: 0.85; }
+  95% { opacity: 0.4; }
+}
+
+.google-btn-container { width: 100%; max-width: 300px; }
+.google-signin-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: var(--text);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14.5px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.12s ease;
+}
+.google-signin-btn:active { transform: scale(0.97); }
+.google-g {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: conic-gradient(from -45deg, #4285F4 0deg 90deg, #34A853 90deg 180deg, #FBBC05 180deg 270deg, #EA4335 270deg 360deg);
+  color: transparent;
+  flex-shrink: 0;
+}
+
+.login-skip {
+  margin-top: 16px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.login-status {
+  min-height: 16px;
+  margin-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ============================== CLOUD STATUS (settings) ============================== */
+
+.cloud-status-box {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin: 16px 0 18px;
+  text-align: left;
+}
+.cloud-status-row { display: flex; align-items: center; gap: 8px; }
+.cloud-status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex-shrink: 0;
+}
+.cloud-status-dot.is-on { background: var(--green); box-shadow: 0 0 8px rgba(127, 203, 164, 0.6); }
+.cloud-status-text { font-size: 13px; font-weight: 600; }
+.cloud-synced-at { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim); margin-top: 4px; }

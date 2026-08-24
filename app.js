@@ -204,7 +204,9 @@ function defaultState() {
     today: { date: todayStr(), checked: {}, fullBonusAwarded: false, prevStreak: 0, prevLastFull: null },
     statHistory: [],
     statCounts: { strength: 0, grip: 0, endurance: 0, mobility: 0 },
-    log: {}
+    log: {},
+    hasSeenLogin: false,
+    updatedAt: 0
   };
 }
 
@@ -224,7 +226,9 @@ function loadState() {
 }
 
 function saveState() {
+  state.updatedAt = Date.now();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (typeof onStateSaved === 'function') onStateSaved();
 }
 
 function rolloverDayIfNeeded() {
@@ -321,6 +325,8 @@ function selectClass(id) {
 function resetAll() {
   localStorage.removeItem(STORAGE_KEY);
   state = defaultState();
+  state.hasSeenLogin = true;
+  saveState();
   renderAll();
 }
 
@@ -570,21 +576,29 @@ function switchTab(tabId) {
   document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('is-active', b.getAttribute('data-tab') === tabId));
 }
 
-function renderClassGate() {
-  const gate = document.getElementById('classGate');
+function renderGates() {
+  const login = document.getElementById('loginGate');
+  const classGate = document.getElementById('classGate');
   const app = document.getElementById('app');
-  if (state.className) {
-    gate.classList.remove('is-open');
-    app.classList.remove('is-hidden');
-  } else {
-    gate.classList.add('is-open');
-    app.classList.add('is-hidden');
-  }
+
+  const showLogin = !state.hasSeenLogin;
+  const showClass = !showLogin && !state.className;
+  const showApp = !showLogin && !!state.className;
+
+  login.classList.toggle('is-open', showLogin);
+  classGate.classList.toggle('is-open', showClass);
+  app.classList.toggle('is-hidden', !showApp);
+}
+
+function dismissLogin() {
+  state.hasSeenLogin = true;
+  saveState();
+  renderAll();
 }
 
 function renderAll() {
-  renderClassGate();
-  if (!state.className) return;
+  renderGates();
+  if (!state.hasSeenLogin || !state.className) return;
   renderStatus();
   renderQuest();
   renderLog();
@@ -639,7 +653,17 @@ function init() {
     e.target.reset();
   });
 
+  document.getElementById('localOnlyBtn').addEventListener('click', dismissLogin);
+
   document.getElementById('settingsBtn').addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.add('is-open');
+    if (typeof refreshCloudStatusUI === 'function') refreshCloudStatusUI();
+  });
+  document.getElementById('settingsClose').addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.remove('is-open');
+  });
+  document.getElementById('openResetBtn').addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.remove('is-open');
     document.getElementById('resetModal').classList.add('is-open');
   });
   document.getElementById('resetCancel').addEventListener('click', () => {

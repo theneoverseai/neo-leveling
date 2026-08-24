@@ -1,9 +1,11 @@
-const CACHE = 'neo-leveling-v1';
+const CACHE = 'neo-leveling-v2';
 const PRECACHE = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './cloud.js',
+  './config.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'

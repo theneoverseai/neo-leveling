@@ -15,8 +15,31 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
 </head>
 <body>
+
+<div id="loginGate" class="login-gate">
+  <div class="login-bg">
+    <div class="login-orb login-orb-1"></div>
+    <div class="login-orb login-orb-2"></div>
+    <div class="login-scanline"></div>
+    <div class="login-particles">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="login-content">
+    <div class="login-sigil-ring">
+      <div class="login-sigil-hex"></div>
+      <div class="login-sigil-diamond"></div>
+    </div>
+    <div class="login-title">NEO LEVELING</div>
+    <div class="login-subtitle">THE SYSTEM AWAKENS</div>
+    <div id="googleBtnContainer" class="google-btn-container"></div>
+    <button id="localOnlyBtn" class="login-skip">Continue without signing in</button>
+    <div id="loginStatus" class="login-status"></div>
+  </div>
+</div>
 
 <div id="classGate" class="class-gate"></div>
 
@@ -172,6 +195,33 @@
   </div>
 </div>
 
+<div id="settingsModal" class="modal">
+  <div class="modal-card modal-card-sm">
+    <div class="modal-title">Settings</div>
+
+    <div class="cloud-status-box">
+      <div class="cloud-status-row">
+        <span class="cloud-status-dot" id="cloudStatusDot"></span>
+        <span id="cloudStatusText" class="cloud-status-text">Not signed in</span>
+      </div>
+      <div id="cloudSyncedAt" class="cloud-synced-at"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="cloudSignInBtn" class="primary-btn">Sign in with Google</button>
+    </div>
+    <div class="modal-actions" id="cloudSignedInActions" style="display:none;">
+      <button id="cloudSyncNowBtn" class="ghost-btn">Sync Now</button>
+      <button id="cloudSignOutBtn" class="ghost-btn">Sign Out</button>
+    </div>
+
+    <div class="modal-actions" style="margin-top:18px;">
+      <button id="settingsClose" class="ghost-btn">Close</button>
+      <button id="openResetBtn" class="danger-btn">Reset Progress</button>
+    </div>
+  </div>
+</div>
+
 <div id="resetModal" class="modal">
   <div class="modal-card modal-card-sm">
     <div class="modal-title">Reset everything?</div>
@@ -183,6 +233,8 @@
   </div>
 </div>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="app.js"></script>
+<script src="cloud.js"></script>
 </body>
 </html>
