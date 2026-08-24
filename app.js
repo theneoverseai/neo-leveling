@@ -13,8 +13,6 @@ const RANKS = [
   { letter: 'S', floor: 8000, ceil: null, color: '#F0E9C8' }
 ];
 
-const DAY_TYPE_BY_DOW = ['Rest', 'Push', 'Pull', 'Legs', 'Rest', 'Push', 'Pull']; // Sun..Sat
-
 const ITEM_XP = 10;
 const DAY_BONUS_XP = 20;
 
@@ -199,8 +197,45 @@ const GOAL_DESCRIPTIONS = {
   endurance: 'High reps, minimal rest — muscular endurance and mobility.'
 };
 
+/* Body-goal is motivational framing only — it suggests a training goal and
+   shapes encouragement copy. It never touches XP, rank, or the stat bars;
+   those move on training consistency only, per the original design rule. */
+const BODY_GOALS = {
+  lean:     { label: 'Lean & Athletic', blurb: 'A capable, efficient build — moves well, holds up under load.', suggestGoal: 'general' },
+  muscle:   { label: 'Build Muscle & Size', blurb: 'Visible, earned size — more mass, more presence.', suggestGoal: 'hypertrophy' },
+  strong:   { label: 'Get Stronger', blurb: 'Raw force — heavier, harder, more control under load.', suggestGoal: 'strength' },
+  feel:     { label: 'Move Better & Feel Good', blurb: 'Less pain, more range, feeling good in your own body day to day.', suggestGoal: 'endurance' }
+};
+
+const ACTIVITY_LEVELS = {
+  sedentary: { label: 'Mostly Sedentary', blurb: 'Desk-bound, little movement outside sessions' },
+  light:     { label: 'Lightly Active', blurb: 'Walking, some daily movement' },
+  active:    { label: 'Active', blurb: 'On your feet often, some sport or activity' },
+  very:      { label: 'Very Active', blurb: 'Physical job, sport, or high daily movement' }
+};
+
+const EQUIPMENT_OPTIONS = {
+  rings_bands: { label: 'Rings + Resistance Bands', blurb: 'The full program below — built for exactly this setup.', available: true },
+  bodyweight:  { label: 'Bodyweight Only', blurb: 'No rings or bands, just floor space.', available: false },
+  full_gym:    { label: 'Full Gym Access', blurb: 'Barbells, machines, free weights.', available: false }
+};
+
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DEFAULT_TRAINING_DAYS = [1, 2, 3, 5, 6]; // Mon, Tue, Wed, Fri, Sat — matches the original fixed schedule
+
 function defaultProfile() {
-  return { goal: 'general', experience: 'intermediate', heightCm: null, weightKg: null, age: null, timeBudgetMin: 35 };
+  return {
+    bodyGoal: 'lean',
+    goal: 'general',
+    experience: 'intermediate',
+    heightCm: null,
+    weightKg: null,
+    age: null,
+    activityLevel: 'light',
+    equipment: 'rings_bands',
+    trainingDays: DEFAULT_TRAINING_DAYS.slice(),
+    timeBudgetMin: 35
+  };
 }
 
 function computePrescription(ex, profile) {
@@ -337,7 +372,8 @@ function loadState() {
     if (!raw) return defaultState();
     const parsed = JSON.parse(raw);
     return Object.assign(defaultState(), parsed, {
-      today: Object.assign(defaultState().today, parsed.today || {})
+      today: Object.assign(defaultState().today, parsed.today || {}),
+      profile: Object.assign(defaultProfile(), parsed.profile || {})
     });
   } catch (e) {
     return defaultState();
@@ -359,8 +395,14 @@ function rolloverDayIfNeeded() {
 }
 
 function dayType(dateStr = todayStr()) {
+  const raw = (state.profile && Array.isArray(state.profile.trainingDays) && state.profile.trainingDays.length)
+    ? state.profile.trainingDays
+    : DEFAULT_TRAINING_DAYS;
+  const trainingDays = raw.slice().sort((a, b) => a - b);
   const dow = new Date(dateStr + 'T00:00:00').getDay();
-  return DAY_TYPE_BY_DOW[dow];
+  if (!trainingDays.includes(dow)) return 'Rest';
+  const cycle = ['Push', 'Pull', 'Legs'];
+  return cycle[trainingDays.indexOf(dow) % 3];
 }
 
 function todaysQuestItems() {
@@ -781,7 +823,7 @@ function dismissLogin() {
 
 /* ============================== WIZARD ============================== */
 
-const WIZARD_STEPS = ['goal', 'experience', 'stats', 'time', 'review'];
+const WIZARD_STEPS = ['bodygoal', 'goal', 'experience', 'stats', 'equipment', 'trainingdays', 'time', 'review'];
 let wizardStep = 0;
 let wizardDraft = null;
 
@@ -812,10 +854,26 @@ function renderWizardStep() {
 
   const step = WIZARD_STEPS[wizardStep];
 
-  if (step === 'goal') {
+  if (step === 'bodygoal') {
     body.innerHTML = `
-      <div class="wizard-title">What's the goal?</div>
-      <div class="wizard-sub">This shapes your reps, sets, and rest across every session.</div>
+      <div class="wizard-title">What do you want to build?</div>
+      <div class="wizard-sub">Be honest about it — this shapes how the app talks to you, and which training goal it starts you on.</div>
+      <div class="wizard-cards">
+        ${Object.keys(BODY_GOALS).map((key) => `
+          <button class="wizard-card ${wizardDraft.bodyGoal === key ? 'is-selected' : ''}" data-bodygoal="${key}">
+            <span class="wizard-card-title">${BODY_GOALS[key].label}</span>
+            <span class="wizard-card-sub">${BODY_GOALS[key].blurb}</span>
+          </button>`).join('')}
+      </div>`;
+    body.querySelectorAll('[data-bodygoal]').forEach((btn) => btn.addEventListener('click', () => {
+      wizardDraft.bodyGoal = btn.getAttribute('data-bodygoal');
+      wizardDraft.goal = BODY_GOALS[wizardDraft.bodyGoal].suggestGoal;
+      renderWizardStep();
+    }));
+  } else if (step === 'goal') {
+    body.innerHTML = `
+      <div class="wizard-title">Training goal</div>
+      <div class="wizard-sub">Pre-picked from what you just chose — this shapes your reps, sets, and rest across every session. Change it if it's not right.</div>
       <div class="wizard-cards">
         ${Object.keys(GOAL_PROFILES).map((key) => `
           <button class="wizard-card ${wizardDraft.goal === key ? 'is-selected' : ''}" data-goal="${key}">
@@ -843,13 +901,71 @@ function renderWizardStep() {
     }));
   } else if (step === 'stats') {
     body.innerHTML = `
-      <div class="wizard-title">Body stats</div>
-      <div class="wizard-sub">Optional. Helps calibrate your profile — skip if you'd rather not.</div>
+      <div class="wizard-title">Body stats &amp; activity</div>
+      <div class="wizard-sub">Optional. Helps calibrate your profile — skip the numbers if you'd rather not share them.</div>
       <div class="wizard-fields">
         <label class="record-field"><span>Height (cm)</span><input id="wzHeight" type="number" min="100" max="250" value="${wizardDraft.heightCm ?? ''}"></label>
         <label class="record-field"><span>Weight (kg)</span><input id="wzWeight" type="number" min="30" max="250" value="${wizardDraft.weightKg ?? ''}"></label>
         <label class="record-field"><span>Age</span><input id="wzAge" type="number" min="10" max="100" value="${wizardDraft.age ?? ''}"></label>
+      </div>
+      <div class="wizard-cards wizard-cards-compact">
+        ${Object.keys(ACTIVITY_LEVELS).map((key) => `
+          <button class="wizard-card ${wizardDraft.activityLevel === key ? 'is-selected' : ''}" data-activity="${key}">
+            <span class="wizard-card-title">${ACTIVITY_LEVELS[key].label}</span>
+            <span class="wizard-card-sub">${ACTIVITY_LEVELS[key].blurb}</span>
+          </button>`).join('')}
       </div>`;
+    body.querySelectorAll('[data-activity]').forEach((btn) => btn.addEventListener('click', () => {
+      wizardDraft.activityLevel = btn.getAttribute('data-activity');
+      renderWizardStep();
+    }));
+  } else if (step === 'equipment') {
+    body.innerHTML = `
+      <div class="wizard-title">What have you got?</div>
+      <div class="wizard-sub">Your program is built around what you actually have access to.</div>
+      <div class="wizard-cards">
+        ${Object.keys(EQUIPMENT_OPTIONS).map((key) => {
+          const opt = EQUIPMENT_OPTIONS[key];
+          const selected = wizardDraft.equipment === key;
+          return `
+          <button class="wizard-card ${selected ? 'is-selected' : ''} ${!opt.available ? 'is-disabled' : ''}" data-equip="${key}">
+            <span class="wizard-card-title">${opt.label} ${!opt.available ? '<span class="wizard-soon">Coming soon</span>' : ''}</span>
+            <span class="wizard-card-sub">${opt.blurb}</span>
+          </button>`;
+        }).join('')}
+      </div>`;
+    body.querySelectorAll('[data-equip]').forEach((btn) => btn.addEventListener('click', () => {
+      const key = btn.getAttribute('data-equip');
+      if (!EQUIPMENT_OPTIONS[key].available) {
+        setWizardNote('That exercise library is coming in a future update — using Rings + Bands for now.');
+        return;
+      }
+      wizardDraft.equipment = key;
+      renderWizardStep();
+    }));
+  } else if (step === 'trainingdays') {
+    body.innerHTML = `
+      <div class="wizard-title">Which days can you train?</div>
+      <div class="wizard-sub">Push/Pull/Legs rotates across whichever days you pick. Untrained days show light mobility work instead.</div>
+      <div class="weekday-picker">
+        ${WEEKDAY_LABELS.map((label, i) => `
+          <button class="weekday-chip ${wizardDraft.trainingDays.includes(i) ? 'is-selected' : ''}" data-day="${i}">${label}</button>`).join('')}
+      </div>
+      <div id="wizardNote" class="wizard-note"></div>`;
+    body.querySelectorAll('[data-day]').forEach((btn) => btn.addEventListener('click', () => {
+      const day = Number(btn.getAttribute('data-day'));
+      const idx = wizardDraft.trainingDays.indexOf(day);
+      if (idx >= 0) {
+        if (wizardDraft.trainingDays.length <= 2) {
+          setWizardNote('Keep at least 2 training days so Push/Pull/Legs can rotate.');
+          return;
+        }
+        wizardDraft.trainingDays.splice(idx, 1);
+      } else {
+        wizardDraft.trainingDays.push(day);
+      }
+      renderWizardStep();
+    }));
   } else if (step === 'time') {
     const TIME_OPTIONS = [{ min: 20, label: '15-20 min' }, { min: 35, label: '30-40 min' }, { min: 55, label: '45-60 min' }, { min: 75, label: '60+ min' }];
     body.innerHTML = `
@@ -868,18 +984,32 @@ function renderWizardStep() {
   } else if (step === 'review') {
     const g = GOAL_PROFILES[wizardDraft.goal].label;
     const e = EXPERIENCE_PROFILES[wizardDraft.experience].label;
+    const bg = BODY_GOALS[wizardDraft.bodyGoal];
+    const eq = EQUIPMENT_OPTIONS[wizardDraft.equipment].label;
+    const daysLabel = wizardDraft.trainingDays.slice().sort((a, b) => a - b).map((d) => WEEKDAY_LABELS[d]).join(' / ');
     body.innerHTML = `
       <div class="wizard-title">Program calibrated</div>
-      <div class="wizard-sub">Every day's exercises now scale to this profile. Change it anytime in Settings.</div>
+      <div class="wizard-sub wizard-motivate">${bg.label} starts with consistency, not a number on a scale. Every session here moves your rank — training shows up in what you can do, what you eat shapes the rest, and that part's on you.</div>
       <div class="wizard-review">
-        <div class="wizard-review-row"><span>Goal</span><b>${g}</b></div>
+        <div class="wizard-review-row"><span>Body goal</span><b>${bg.label}</b></div>
+        <div class="wizard-review-row"><span>Training goal</span><b>${g}</b></div>
         <div class="wizard-review-row"><span>Experience</span><b>${e}</b></div>
+        <div class="wizard-review-row"><span>Equipment</span><b>${eq}</b></div>
+        <div class="wizard-review-row"><span>Training days</span><b>${daysLabel}</b></div>
         <div class="wizard-review-row"><span>Session time</span><b>~${wizardDraft.timeBudgetMin} min</b></div>
         ${wizardDraft.heightCm ? `<div class="wizard-review-row"><span>Height</span><b>${wizardDraft.heightCm} cm</b></div>` : ''}
         ${wizardDraft.weightKg ? `<div class="wizard-review-row"><span>Weight</span><b>${wizardDraft.weightKg} kg</b></div>` : ''}
         ${wizardDraft.age ? `<div class="wizard-review-row"><span>Age</span><b>${wizardDraft.age}</b></div>` : ''}
       </div>`;
   }
+}
+
+function setWizardNote(msg) {
+  const el = document.getElementById('wizardNote');
+  if (!el) return;
+  el.textContent = msg;
+  clearTimeout(setWizardNote._t);
+  setWizardNote._t = setTimeout(() => { el.textContent = ''; }, 3200);
 }
 
 function wizardGoNext() {

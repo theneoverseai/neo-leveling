@@ -144,7 +144,10 @@ async function syncFromDriveThenProceed() {
       cloudFileId = file.id;
       const remote = await driveReadFile(file.id);
       if (remote && (remote.updatedAt || 0) > (state.updatedAt || 0)) {
-        state = Object.assign(defaultState(), remote, { hasSeenLogin: true });
+        state = Object.assign(defaultState(), remote, {
+          hasSeenLogin: true,
+          profile: Object.assign(defaultProfile(), remote.profile || {})
+        });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
     }
