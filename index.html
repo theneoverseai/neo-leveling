@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0A0910">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NeoLvl">
+<title>Neo Leveling</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="classGate" class="class-gate"></div>
+
+<div id="app" class="app is-hidden">
+
+  <header class="status-window">
+    <div class="status-top">
+      <div class="sigil-block">
+        <div id="sigil" class="sigil">E</div>
+        <div class="sigil-meta">
+          <div id="rankName" class="rank-name">Rank E</div>
+          <div id="className" class="class-name-sm">—</div>
+        </div>
+      </div>
+      <div class="status-numbers">
+        <div class="num-block"><span id="levelValue" class="num-value">0</span><span class="num-label">Level</span></div>
+        <div class="num-block"><span id="streakValue" class="num-value">0</span><span class="num-label">Streak</span></div>
+        <div class="num-block"><span id="totalXpValue" class="num-value">0</span><span class="num-label">Total XP</span></div>
+      </div>
+      <button id="settingsBtn" class="icon-btn" aria-label="Settings">⋯</button>
+    </div>
+
+    <div class="xp-bar">
+      <div id="xpBarFill" class="xp-bar-fill"></div>
+    </div>
+    <div id="xpBarLabel" class="xp-bar-label">0 / 500 XP to D</div>
+
+    <div class="stat-grid">
+      <div class="stat-row">
+        <span class="stat-name">Strength</span>
+        <div class="stat-bar"><div id="stat-strength" class="stat-bar-fill stat-strength"></div></div>
+        <span id="stat-strength-num" class="stat-num">0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Grip</span>
+        <div class="stat-bar"><div id="stat-grip" class="stat-bar-fill stat-grip"></div></div>
+        <span id="stat-grip-num" class="stat-num">0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Endurance</span>
+        <div class="stat-bar"><div id="stat-endurance" class="stat-bar-fill stat-endurance"></div></div>
+        <span id="stat-endurance-num" class="stat-num">0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Mobility</span>
+        <div class="stat-bar"><div id="stat-mobility" class="stat-bar-fill stat-mobility"></div></div>
+        <span id="stat-mobility-num" class="stat-num">0</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="tab-panels">
+
+    <section id="tab-quest" class="tab-panel is-active">
+      <div class="panel-head">
+        <div>
+          <div id="questDayType" class="panel-title">Push Day</div>
+          <div id="questDate" class="panel-sub"></div>
+        </div>
+        <div class="quest-progress-wrap">
+          <span id="questProgress" class="quest-progress-label">0 / 10</span>
+          <div class="quest-progress-bar"><div id="questProgressFill" class="quest-progress-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="section-label">Today's Quest</div>
+      <div id="workoutList" class="quest-list"></div>
+
+      <div class="section-label section-label-gold">Daily Quests</div>
+      <div id="dailyQuestList" class="quest-list"></div>
+    </section>
+
+    <section id="tab-log" class="tab-panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Hunter's Log</div>
+          <div id="logMonthLabel" class="panel-sub"></div>
+        </div>
+      </div>
+
+      <div class="cal-weekdays">
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+      </div>
+      <div id="calGrid" class="cal-grid"></div>
+
+      <div class="log-summary">
+        <div class="log-summary-item"><span id="logFull" class="log-summary-num log-full">0</span><span class="log-summary-label">Full</span></div>
+        <div class="log-summary-item"><span id="logPartial" class="log-summary-num log-partial">0</span><span class="log-summary-label">Partial</span></div>
+        <div class="log-summary-item"><span id="logMissed" class="log-summary-num log-missed">0</span><span class="log-summary-label">Missed</span></div>
+        <div class="log-summary-item"><span id="logPct" class="log-summary-num log-pct">0%</span><span class="log-summary-label">Consistency</span></div>
+      </div>
+    </section>
+
+    <section id="tab-library" class="tab-panel">
+      <div class="panel-head">
+        <div class="panel-title">Exercise Library</div>
+      </div>
+      <div id="libraryTabs" class="lib-tabs">
+        <button class="lib-tab is-active" data-lib="Push">Push</button>
+        <button class="lib-tab" data-lib="Pull">Pull</button>
+        <button class="lib-tab" data-lib="Legs">Legs</button>
+        <button class="lib-tab" data-lib="Rest">Mobility</button>
+      </div>
+      <div id="libraryCoverage" class="library-coverage"></div>
+      <div id="libraryList" class="library-list"></div>
+    </section>
+
+    <section id="tab-records" class="tab-panel">
+      <div class="panel-head">
+        <div class="panel-title">Stat Records</div>
+      </div>
+
+      <form id="recordForm" class="record-form">
+        <div class="record-form-grid">
+          <label class="record-field"><span>Ring Dip Max</span><input id="rec-dip" type="number" step="1" placeholder="reps"></label>
+          <label class="record-field"><span>Pull Up Max</span><input id="rec-pull" type="number" step="1" placeholder="reps"></label>
+          <label class="record-field"><span>Ankle Gap</span><input id="rec-ankle" type="number" step="0.1" placeholder="cm"></label>
+          <label class="record-field"><span>L-Sit Hold</span><input id="rec-lsit" type="number" step="1" placeholder="sec"></label>
+          <label class="record-field"><span>Dead Hang</span><input id="rec-hang" type="number" step="1" placeholder="sec"></label>
+          <label class="record-field"><span>Squat Heel Gap</span><input id="rec-squat" type="number" step="0.1" placeholder="cm"></label>
+        </div>
+        <button type="submit" class="primary-btn">Log Record</button>
+      </form>
+
+      <div id="recordsBody" class="records-body">
+        <table id="recordsTable" class="records-table"></table>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn is-active" data-tab="quest">Quest</button>
+    <button class="nav-btn" data-tab="log">Log</button>
+    <button class="nav-btn" data-tab="library">Library</button>
+    <button class="nav-btn" data-tab="records">Records</button>
+  </nav>
+
+</div>
+
+<div id="exerciseModal" class="modal">
+  <div class="modal-card">
+    <button id="modalClose" class="modal-close" aria-label="Close">×</button>
+    <div id="modalTitle" class="modal-title"></div>
+    <div id="modalSets" class="modal-sets"></div>
+    <div id="modalBlurb" class="modal-blurb"></div>
+    <div class="modal-tags">
+      <div class="modal-tag-row"><span class="modal-tag-label">Primary</span><div id="modalPrimary" class="tag-row"></div></div>
+      <div class="modal-tag-row"><span class="modal-tag-label">Secondary</span><div id="modalSecondary" class="tag-row"></div></div>
+      <div class="modal-tag-row"><span class="modal-tag-label">Not Targeted</span><div id="modalNot" class="tag-row"></div></div>
+    </div>
+    <a id="modalWatch" class="watch-link" href="#" target="_blank" rel="noopener">Watch Tutorial ↗</a>
+  </div>
+</div>
+
+<div id="resetModal" class="modal">
+  <div class="modal-card modal-card-sm">
+    <div class="modal-title">Reset everything?</div>
+    <div class="modal-blurb">This clears all XP, streak, log history, and records. This cannot be undone.</div>
+    <div class="modal-actions">
+      <button id="resetCancel" class="ghost-btn">Cancel</button>
+      <button id="resetConfirm" class="danger-btn">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
