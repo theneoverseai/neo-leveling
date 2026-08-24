@@ -733,3 +733,64 @@ button, input {
 .cloud-status-dot.is-on { background: var(--green); box-shadow: 0 0 8px rgba(127, 203, 164, 0.6); }
 .cloud-status-text { font-size: 13px; font-weight: 600; }
 .cloud-synced-at { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim); margin-top: 4px; }
+
+/* ============================== ONBOARDING WIZARD ============================== */
+
+.wizard-gate {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: var(--bg);
+  flex-direction: column;
+  padding: calc(env(safe-area-inset-top) + 20px) 22px calc(env(safe-area-inset-bottom) + 20px);
+}
+.wizard-gate.is-open { display: flex; }
+
+.wizard-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 8px; }
+.wizard-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background 0.2s ease, transform 0.2s ease; }
+.wizard-dot.is-active { background: var(--violet); transform: scale(1.3); }
+.wizard-dot.is-done { background: color-mix(in srgb, var(--violet) 45%, var(--border)); }
+
+.wizard-body { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 480px; width: 100%; margin: 0 auto; }
+
+.wizard-title { font-family: var(--font-head); font-weight: 800; font-size: 24px; text-align: center; }
+.wizard-sub { font-size: 13px; color: var(--text-dim); text-align: center; margin-top: 8px; line-height: 1.5; max-width: 340px; margin-left: auto; margin-right: auto; }
+
+.wizard-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+.wizard-card {
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.wizard-card:active { transform: scale(0.98); }
+.wizard-card.is-selected { border-color: var(--violet); background: var(--violet-dim); }
+.wizard-card-title { font-family: var(--font-head); font-weight: 700; font-size: 15.5px; }
+.wizard-card-sub { font-size: 12.5px; color: var(--text-dim); line-height: 1.4; }
+
+.wizard-fields { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+
+.wizard-review { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
+.wizard-review-row { display: flex; justify-content: space-between; font-size: 13.5px; }
+.wizard-review-row span { color: var(--text-dim); }
+.wizard-review-row b { font-weight: 700; }
+
+.wizard-nav { display: flex; gap: 10px; max-width: 480px; width: 100%; margin: 24px auto 0; }
+.wizard-back { flex: 0 0 auto; padding-left: 22px; padding-right: 22px; }
+.wizard-next { flex: 1; }
+
+/* ============================== EXERCISE EDIT ============================== */
+
+.badge-custom { background: var(--green-dim); color: var(--green); }
+
+.modal-edit { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
+.modal-edit-label { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 10px; }
+.modal-edit-auto { color: var(--violet); text-transform: none; letter-spacing: 0; }
+.modal-edit-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }

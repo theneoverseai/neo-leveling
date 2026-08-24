@@ -40,6 +40,15 @@
   </div>
 </div>
 
+<div id="wizardGate" class="wizard-gate">
+  <div class="wizard-dots" id="wizardDots"></div>
+  <div class="wizard-body" id="wizardBody"></div>
+  <div class="wizard-nav">
+    <button id="wizardBack" class="ghost-btn wizard-back">Back</button>
+    <button id="wizardNext" class="primary-btn wizard-next">Next</button>
+  </div>
+</div>
+
 <div id="classGate" class="class-gate"></div>
 
 <div id="app" class="app is-hidden">
@@ -190,6 +199,15 @@
       <div class="modal-tag-row"><span class="modal-tag-label">Secondary</span><div id="modalSecondary" class="tag-row"></div></div>
       <div class="modal-tag-row"><span class="modal-tag-label">Not Targeted</span><div id="modalNot" class="tag-row"></div></div>
     </div>
+    <div id="modalEdit" class="modal-edit">
+      <div class="modal-edit-label">Sets &amp; reps <span id="modalEditAuto" class="modal-edit-auto"></span></div>
+      <div id="modalEditFields" class="modal-edit-fields"></div>
+      <div class="modal-actions">
+        <button id="modalEditReset" class="ghost-btn">Reset to Auto</button>
+        <button id="modalEditSave" class="primary-btn">Save</button>
+      </div>
+    </div>
+
     <a id="modalWatch" class="watch-link" href="#" target="_blank" rel="noopener">Watch Tutorial ↗</a>
   </div>
 </div>
@@ -215,6 +233,9 @@
     </div>
 
     <div class="modal-actions" style="margin-top:18px;">
+      <button id="editProfileBtn" class="ghost-btn">Edit Training Profile</button>
+    </div>
+    <div class="modal-actions">
       <button id="settingsClose" class="ghost-btn">Close</button>
       <button id="openResetBtn" class="danger-btn">Reset Progress</button>
     </div>
@@ -224,7 +245,7 @@
 <div id="resetModal" class="modal">
   <div class="modal-card modal-card-sm">
     <div class="modal-title">Reset everything?</div>
-    <div class="modal-blurb">This clears all XP, streak, log history, and records. This cannot be undone.</div>
+    <div class="modal-blurb">This clears all XP, streak, log history, records, and your training profile. This cannot be undone.</div>
     <div class="modal-actions">
       <button id="resetCancel" class="ghost-btn">Cancel</button>
       <button id="resetConfirm" class="danger-btn">Reset</button>

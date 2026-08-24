@@ -24,34 +24,44 @@ const DAY_TYPE_BY_DOW = ['Rest', 'Push', 'Pull', 'Legs', 'Rest', 'Push', 'Pull']
 const ITEM_XP = 10;
 const DAY_BONUS_XP = 20;
 
+/* Each exercise carries structured load data so sets/reps/rest can be computed
+   per user goal + experience + time budget instead of hardcoded. `goalScaled`
+   marks whether ACSM/NSCA goal-based rep-range scaling applies — corrective,
+   skill/ROM-limited, and mobility work stay fixed regardless of training goal,
+   per standard S&C practice of not varying joint-health work by phase. */
 const EXERCISES = {
   Push: [
     {
-      id: 'push-ring-dip', name: 'Ring Dip', sets: '4 x 3-6', note: 'band assisted', badge: 'PRIORITY',
+      id: 'push-ring-dip', name: 'Ring Dip', note: 'band assisted', badge: 'PRIORITY',
+      unit: 'reps', baseSets: 4, repMin: 3, repMax: 6, goalScaled: true,
       primary: ['Chest', 'Triceps'], secondary: ['Front Delts', 'Core'], notTargeted: ['Back', 'Legs', 'Grip'],
       blurb: 'Anchor push movement. Heaviest loading pattern in the session, drives chest and triceps strength directly.',
       stat: 'strength'
     },
     {
-      id: 'push-ring-pushup', name: 'Ring Push Up', sets: '4 x 10-15', note: 'feet elevated',
+      id: 'push-ring-pushup', name: 'Ring Push Up', note: 'feet elevated',
+      unit: 'reps', baseSets: 4, repMin: 10, repMax: 15, goalScaled: true,
       primary: ['Chest', 'Shoulders'], secondary: ['Triceps', 'Core'], notTargeted: ['Back', 'Grip'],
       blurb: 'Volume work after the dip. Feeds the same pattern at higher reps to build control and hypertrophy.',
       stat: 'strength'
     },
     {
-      id: 'push-pike-pushup', name: 'Pike Push Up', sets: '3 x 8-12', note: 'on rings',
+      id: 'push-pike-pushup', name: 'Pike Push Up', note: 'on rings',
+      unit: 'reps', baseSets: 3, repMin: 8, repMax: 12, goalScaled: true,
       primary: ['Shoulders'], secondary: ['Triceps', 'Upper Chest'], notTargeted: ['Back', 'Legs'],
       blurb: "Main shoulder builder for the day. Vertical pressing angle the dip and push up don't hit.",
       stat: 'strength'
     },
     {
-      id: 'push-ring-fly', name: 'Ring Fly', sets: '3 x 10-15', note: 'slow controlled',
+      id: 'push-ring-fly', name: 'Ring Fly', note: 'slow controlled',
+      unit: 'reps', baseSets: 3, repMin: 10, repMax: 15, goalScaled: true,
       primary: ['Chest'], secondary: ['Front Delts', 'Rotator Cuff'], notTargeted: ['Triceps', 'Back'],
       blurb: 'Stretch-position chest work at slow tempo. Builds control and the connective tissue resilience rings demand.',
       stat: 'strength'
     },
     {
-      id: 'push-diamond-pushup', name: 'Diamond Push Up', sets: '2 x 12-15', note: 'on rings',
+      id: 'push-diamond-pushup', name: 'Diamond Push Up', note: 'on rings',
+      unit: 'reps', baseSets: 2, repMin: 12, repMax: 15, goalScaled: true,
       primary: ['Triceps'], secondary: ['Chest', 'Core'], notTargeted: ['Back', 'Shoulders'],
       blurb: 'Triceps finisher. Closes the session on the muscle that assisted every prior movement.',
       stat: 'strength'
@@ -59,31 +69,36 @@ const EXERCISES = {
   ],
   Pull: [
     {
-      id: 'pull-strict-pullup', name: 'Strict Pull Up', sets: '4 x 4-5', note: '', badge: 'STRONGEST',
+      id: 'pull-strict-pullup', name: 'Strict Pull Up', note: '', badge: 'STRONGEST',
+      unit: 'reps', baseSets: 4, repMin: 4, repMax: 5, goalScaled: true,
       primary: ['Lats', 'Biceps'], secondary: ['Grip', 'Rear Delts'], notTargeted: ['Chest', 'Legs'],
       blurb: 'Your strongest pull pattern. Leads the session while grip and CNS are freshest.',
       stat: 'strength'
     },
     {
-      id: 'pull-ring-row', name: 'Ring Row', sets: '3 x 10-12', note: 'feet forward',
+      id: 'pull-ring-row', name: 'Ring Row', note: 'feet forward',
+      unit: 'reps', baseSets: 3, repMin: 10, repMax: 12, goalScaled: true,
       primary: ['Mid Back', 'Lats'], secondary: ['Biceps', 'Rear Delts'], notTargeted: ['Chest', 'Legs'],
       blurb: 'Horizontal pull volume. Balances the vertical pull up with a different angle on the back.',
       stat: 'strength'
     },
     {
-      id: 'pull-band-wide-row', name: 'Band Assisted Wide Row', sets: '3 x 8-10', note: 'or pull up',
+      id: 'pull-band-wide-row', name: 'Band Assisted Wide Row', note: 'or pull up',
+      unit: 'reps', baseSets: 3, repMin: 8, repMax: 10, goalScaled: true,
       primary: ['Rear Delts', 'Upper Back'], secondary: ['Lats', 'Biceps'], notTargeted: ['Chest', 'Grip'],
       blurb: 'Rear delt and upper back focus. The angle the pull up and row leave underworked.',
       stat: 'strength'
     },
     {
-      id: 'pull-face-pull', name: 'Band Face Pull', sets: '3 x 15', note: 'corrective',
+      id: 'pull-face-pull', name: 'Band Face Pull', note: 'corrective',
+      unit: 'reps', baseSets: 3, repMin: 15, repMax: 15, goalScaled: false,
       primary: ['Rear Delts', 'Rotator Cuff'], secondary: ['Upper Back'], notTargeted: ['Lats', 'Biceps'],
-      blurb: 'Corrective work. Shoulder health maintenance so heavy pressing and pulling stay pain-free.',
+      blurb: 'Corrective work. Shoulder health maintenance so heavy pressing and pulling stay pain-free — dosed the same regardless of your goal.',
       stat: 'mobility'
     },
     {
-      id: 'pull-dead-hang', name: 'Dead Hang', sets: '3 x max', note: 'target 40s, active grip',
+      id: 'pull-dead-hang', name: 'Dead Hang', note: 'active grip',
+      unit: 'hold', baseSets: 3, holdSec: 40, goalScaled: true,
       primary: ['Grip', 'Forearms'], secondary: ['Shoulders', 'Lats'], notTargeted: ['Chest', 'Legs'],
       blurb: 'Pure grip and shoulder stability endurance. The base every pull up and hang-dependent move relies on.',
       stat: 'grip'
@@ -91,69 +106,177 @@ const EXERCISES = {
   ],
   Legs: [
     {
-      id: 'legs-bulgarian-split', name: 'Bulgarian Split Squat', sets: '3 x 10-12', note: 'per side, rear foot on rings',
+      id: 'legs-bulgarian-split', name: 'Bulgarian Split Squat', note: 'rear foot on rings', perSide: true,
+      unit: 'reps', baseSets: 3, repMin: 10, repMax: 12, goalScaled: true,
       primary: ['Quads', 'Glutes'], secondary: ['Hamstrings', 'Core', 'Balance'], notTargeted: ['Upper Body'],
       blurb: 'Main unilateral strength driver. Builds single-leg quad and glute strength plus the balance rings demand.',
       stat: 'strength'
     },
     {
-      id: 'legs-pistol-squat', name: 'Ring Assisted Pistol Squat', sets: '3 x 6-8', note: 'per side', badge: 'SHALLOW',
+      id: 'legs-pistol-squat', name: 'Ring Assisted Pistol Squat', badge: 'SHALLOW', perSide: true,
+      unit: 'reps', baseSets: 3, repMin: 6, repMax: 8, goalScaled: false,
       primary: ['Quads', 'Glutes'], secondary: ['Ankle', 'Balance'], notTargeted: ['Hamstrings', 'Upper Body'],
-      blurb: "Depth-limited on purpose. Ankle mobility is still developing, so range increases as mobility work pays off, not before.",
+      blurb: "Depth-limited on purpose. Ankle mobility is still developing, so range increases as mobility work pays off, not before — reps stay fixed regardless of goal since ROM is the limiter, not muscular capacity.",
       stat: 'strength'
     },
     {
-      id: 'legs-nordic-curl', name: 'Nordic Curl', sets: '3 x 6-8', note: 'band assisted',
+      id: 'legs-nordic-curl', name: 'Nordic Curl', note: 'band assisted',
+      unit: 'reps', baseSets: 3, repMin: 6, repMax: 8, goalScaled: false,
       primary: ['Hamstrings'], secondary: ['Glutes', 'Core'], notTargeted: ['Quads', 'Upper Body'],
-      blurb: "Hamstring strength the squat patterns don't reach. Band assistance keeps it controlled at your current level.",
+      blurb: "Hamstring strength the squat patterns don't reach. Eccentric-only work stays low-rep regardless of goal to manage joint stress and soreness.",
       stat: 'strength'
     },
     {
-      id: 'legs-calf-raise', name: 'Calf Raise', sets: '3 x 12-15', note: 'slow negative',
+      id: 'legs-calf-raise', name: 'Calf Raise', note: 'slow negative',
+      unit: 'reps', baseSets: 3, repMin: 12, repMax: 15, goalScaled: true,
       primary: ['Calves'], secondary: ['Ankle Stability'], notTargeted: ['Quads', 'Hamstrings', 'Glutes'],
       blurb: 'Slow eccentric builds calf strength and tendon resilience. Feeds directly into ankle stability work.',
       stat: 'endurance'
     },
     {
-      id: 'legs-lateral-band-walk', name: 'Lateral Band Walk', sets: '2 x 15', note: 'per side', badge: 'SWAP',
+      id: 'legs-lateral-band-walk', name: 'Lateral Band Walk', badge: 'SWAP', perSide: true,
+      unit: 'reps', baseSets: 2, repMin: 15, repMax: 15, goalScaled: false,
       primary: ['Glute Medius', 'Hips'], secondary: ['Ankle Stability'], notTargeted: ['Quads', 'Hamstrings'],
-      blurb: 'Replaces jump work this cycle. Protects a currently sore ankle from impact while still training hip stability.',
+      blurb: 'Replaces jump work this cycle. Protects a currently sore ankle from impact while still training hip stability — fixed dosage, not goal-scaled.',
       stat: 'endurance'
     }
   ],
   Rest: [
     {
-      id: 'rest-ankle-dorsi', name: 'Ankle Dorsiflexion Drill', sets: '3 x 10', note: 'per side',
+      id: 'rest-ankle-dorsi', name: 'Ankle Dorsiflexion Drill', perSide: true,
+      unit: 'reps', baseSets: 3, repMin: 10, repMax: 10, goalScaled: false,
       primary: ['Ankle'], secondary: ['Calves'], notTargeted: ['Upper Body'],
       blurb: 'Directly targets the ankle range limiting pistol squat depth. Highest-leverage mobility drill in rotation.',
       stat: 'mobility'
     },
     {
-      id: 'rest-9090-hip', name: '90/90 Hip Switch', sets: '2 min', note: '',
+      id: 'rest-9090-hip', name: '90/90 Hip Switch',
+      unit: 'hold', baseSets: 1, holdSec: 120, goalScaled: false,
       primary: ['Hips'], secondary: ['Core'], notTargeted: ['Upper Body', 'Ankle'],
       blurb: 'Hip internal and external rotation range. Supports squat depth and general lower body mobility.',
       stat: 'mobility'
     },
     {
-      id: 'rest-thoracic-ext', name: 'Thoracic Extension', sets: '1 min', note: 'on foam or towel',
+      id: 'rest-thoracic-ext', name: 'Thoracic Extension', note: 'on foam or towel',
+      unit: 'hold', baseSets: 1, holdSec: 60, goalScaled: false,
       primary: ['Thoracic Spine'], secondary: ['Shoulders'], notTargeted: ['Hips', 'Ankle'],
       blurb: 'Upper back extension. Offsets pressing-dominant push days and keeps overhead positions open.',
       stat: 'mobility'
     },
     {
-      id: 'rest-cat-cow', name: 'Cat Cow Flow', sets: '5 reps', note: '',
+      id: 'rest-cat-cow', name: 'Cat Cow Flow',
+      unit: 'reps', baseSets: 1, repMin: 5, repMax: 5, goalScaled: false,
       primary: ['Spine'], secondary: ['Core'], notTargeted: ['Ankle', 'Hips'],
       blurb: 'Full spine mobility flow. Low-intensity reset between harder training days.',
       stat: 'mobility'
     },
     {
-      id: 'rest-toe-touch', name: 'Toe Touch Check', sets: '1 test', note: '',
+      id: 'rest-toe-touch', name: 'Toe Touch Check',
+      unit: 'test', baseSets: 1, goalScaled: false,
       primary: ['Posterior Chain'], secondary: ['Hamstrings'], notTargeted: ['Upper Body'],
       blurb: 'A quick test, not a drill. Tracks posterior chain flexibility trend over time.',
       stat: 'mobility'
     }
   ]
 };
+
+/* ============================== PROGRAM GENERATOR ============================== */
+/* Goal-based scaling follows the ACSM Position Stand on Resistance Training and
+   NSCA Essentials of Strength Training & Conditioning rep/rest conventions:
+   strength ~<=6 reps, longer rest; hypertrophy ~8-15 reps, moderate rest, higher
+   volume; muscular endurance 15+ reps, minimal rest. */
+const GOAL_PROFILES = {
+  general:     { label: 'General Fitness',        repMult: 1.0,  setsDelta: 0, restSec: 60,  holdMult: 1.0 },
+  strength:    { label: 'Strength',                repMult: 0.55, setsDelta: 1, restSec: 180, holdMult: 1.0 },
+  hypertrophy: { label: 'Hypertrophy',              repMult: 1.15, setsDelta: 1, restSec: 75,  holdMult: 1.0 },
+  endurance:   { label: 'Endurance & Mobility',     repMult: 1.6,  setsDelta: 0, restSec: 30,  holdMult: 1.5 }
+};
+
+const EXPERIENCE_PROFILES = {
+  novice:       { label: 'New to training',   setsDelta: -1 },
+  intermediate: { label: 'Some experience',   setsDelta: 0 },
+  advanced:     { label: 'Experienced',       setsDelta: 1 }
+};
+
+const GOAL_DESCRIPTIONS = {
+  general: 'Balanced strength, conditioning, and mobility.',
+  strength: 'Fewer reps, more sets, longer rest — max force.',
+  hypertrophy: 'Moderate-high reps, more volume — muscle growth.',
+  endurance: 'High reps, minimal rest — muscular endurance and mobility.'
+};
+
+function defaultProfile() {
+  return { goal: 'general', experience: 'intermediate', heightCm: null, weightKg: null, age: null, timeBudgetMin: 35 };
+}
+
+function computePrescription(ex, profile) {
+  const override = state.overrides && state.overrides[ex.id];
+  if (override) return Object.assign({ fromOverride: true }, override);
+
+  const goalP = GOAL_PROFILES[profile.goal] || GOAL_PROFILES.general;
+  const expP = EXPERIENCE_PROFILES[profile.experience] || EXPERIENCE_PROFILES.intermediate;
+  const scaled = !!ex.goalScaled;
+
+  const sets = clampInt(ex.baseSets + (scaled ? goalP.setsDelta : 0) + expP.setsDelta, 2, 6);
+
+  if (ex.unit === 'hold') {
+    const holdSec = scaled ? Math.round(ex.holdSec * goalP.holdMult / 5) * 5 : ex.holdSec;
+    return { sets, unit: 'hold', holdSec, restSec: scaled ? goalP.restSec : 45 };
+  }
+  if (ex.unit === 'test') {
+    return { sets: 1, unit: 'test', restSec: 0 };
+  }
+  const repMin = scaled ? clampInt(Math.round(ex.repMin * goalP.repMult), 3, 30) : ex.repMin;
+  let repMax = scaled ? clampInt(Math.round(ex.repMax * goalP.repMult), repMin, 30) : ex.repMax;
+  if (repMax < repMin) repMax = repMin;
+  return { sets, unit: 'reps', repMin, repMax, restSec: scaled ? goalP.restSec : 45 };
+}
+
+function clampInt(n, min, max) {
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function formatPrescription(ex, p) {
+  const sideTag = ex.perSide ? ' / side' : '';
+  if (p.unit === 'hold') return `${p.sets} x ${p.holdSec}s hold${sideTag}`;
+  if (p.unit === 'test') return '1 test';
+  const reps = p.repMin === p.repMax ? `${p.repMin}` : `${p.repMin}-${p.repMax}`;
+  return `${p.sets} x ${reps}${sideTag}`;
+}
+
+function estimateMinutes(ex, p) {
+  if (p.unit === 'test') return 0.5;
+  const perRepSec = 3.2;
+  const workSec = p.unit === 'hold' ? p.holdSec : ((p.repMin + p.repMax) / 2) * perRepSec;
+  const restSec = p.restSec || 0;
+  const sideMult = ex.perSide ? 2 : 1;
+  return (p.sets * (workSec + restSec) * sideMult + 25) / 60;
+}
+
+function generateDayProgram(dayType, profile) {
+  const pool = EXERCISES[dayType];
+  const items = pool.map((ex) => {
+    const presc = computePrescription(ex, profile);
+    return { ex, presc, minutes: estimateMinutes(ex, presc) };
+  });
+
+  // trim from the pool's priority order — keep the leading run that fits the
+  // time budget rather than greedy-skip-and-backfill, so a later "finisher"
+  // exercise never displaces an earlier priority one.
+  const budget = profile.timeBudgetMin || 35;
+  let running = 0;
+  const included = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (i === 0 || running + item.minutes <= budget) {
+      included.push(item);
+      running += item.minutes;
+    } else {
+      break;
+    }
+  }
+  return included;
+}
 
 const COVERAGE = {
   Push: { covers: ['Chest', 'Triceps', 'Shoulders', 'Front Delts', 'Core'], skips: ['Back', 'Grip', 'Legs', 'Rear Delts'] },
@@ -206,6 +329,9 @@ function defaultState() {
     statCounts: { strength: 0, grip: 0, endurance: 0, mobility: 0 },
     log: {},
     hasSeenLogin: false,
+    hasOnboarded: false,
+    profile: defaultProfile(),
+    overrides: {},
     updatedAt: 0
   };
 }
@@ -246,7 +372,8 @@ function dayType(dateStr = todayStr()) {
 
 function todaysQuestItems() {
   const type = dayType();
-  const workout = EXERCISES[type].map((ex) => ({ id: ex.id, kind: 'exercise', stat: ex.stat, ref: ex }));
+  const program = generateDayProgram(type, state.profile || defaultProfile());
+  const workout = program.map(({ ex, presc }) => ({ id: ex.id, kind: 'exercise', stat: ex.stat, ref: ex, presc }));
   const quests = DAILY_QUESTS.map((q) => ({ id: q.id, kind: 'quest', stat: null, ref: q }));
   return { type, items: workout.concat(quests) };
 }
@@ -374,7 +501,7 @@ function renderQuest() {
   const questItems = items.filter((i) => i.kind === 'quest');
 
   const wrap = document.getElementById('workoutList');
-  wrap.innerHTML = workoutItems.map((i) => exerciseRow(i.ref, state.today.checked[i.id])).join('');
+  wrap.innerHTML = workoutItems.map((i) => exerciseRow(i.ref, state.today.checked[i.id], i.presc)).join('');
 
   const dq = document.getElementById('dailyQuestList');
   dq.innerHTML = questItems.map((i) => questRow(i.ref, state.today.checked[i.id])).join('');
@@ -397,7 +524,8 @@ function renderQuest() {
   });
 }
 
-function exerciseRow(ex, checked) {
+function exerciseRow(ex, checked, presc) {
+  const rx = presc || computePrescription(ex, state.profile);
   return `
     <div class="quest-item ${checked ? 'is-checked' : ''}">
       <div class="quest-check" data-toggle="${ex.id}">
@@ -406,8 +534,9 @@ function exerciseRow(ex, checked) {
           <div class="quest-item-title">
             <span class="quest-item-name">${ex.name}</span>
             ${ex.badge ? `<span class="badge badge-${ex.badge.toLowerCase()}">${ex.badge}</span>` : ''}
+            ${rx.fromOverride ? '<span class="badge badge-custom">CUSTOM</span>' : ''}
           </div>
-          <div class="quest-item-sub">${ex.sets}${ex.note ? ' · ' + ex.note : ''}</div>
+          <div class="quest-item-sub">${formatPrescription(ex, rx)}${ex.note ? ' · ' + ex.note : ''}</div>
         </div>
       </div>
       <button class="info-btn" data-info="${ex.id}" aria-label="Exercise info">i</button>
@@ -435,18 +564,79 @@ function findExercise(id) {
   return null;
 }
 
+let modalExerciseId = null;
+
 function openExerciseDetail(id) {
   const ex = findExercise(id);
   if (!ex) return;
+  modalExerciseId = id;
+  const rx = computePrescription(ex, state.profile);
+
   const modal = document.getElementById('exerciseModal');
   document.getElementById('modalTitle').textContent = ex.name;
-  document.getElementById('modalSets').textContent = `${ex.sets}${ex.note ? ' · ' + ex.note : ''}`;
+  document.getElementById('modalSets').textContent = `${formatPrescription(ex, rx)}${ex.note ? ' · ' + ex.note : ''}`;
   document.getElementById('modalBlurb').textContent = ex.blurb;
   document.getElementById('modalPrimary').innerHTML = ex.primary.map(tagChip).join('');
   document.getElementById('modalSecondary').innerHTML = ex.secondary.map(tagChip).join('');
   document.getElementById('modalNot').innerHTML = ex.notTargeted.map(tagChip).join('');
   document.getElementById('modalWatch').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' exercise form')}`;
+
+  renderModalEdit(ex, rx);
   modal.classList.add('is-open');
+}
+
+function renderModalEdit(ex, rx) {
+  const editBox = document.getElementById('modalEdit');
+  const fields = document.getElementById('modalEditFields');
+  const autoTag = document.getElementById('modalEditAuto');
+  autoTag.textContent = rx.fromOverride ? '(custom)' : '(auto)';
+
+  if (rx.unit === 'test') {
+    editBox.style.display = 'none';
+    return;
+  }
+  editBox.style.display = 'block';
+
+  if (rx.unit === 'hold') {
+    fields.innerHTML = `
+      <label class="record-field"><span>Sets</span><input id="editSets" type="number" min="1" max="6" value="${rx.sets}"></label>
+      <label class="record-field"><span>Hold (sec)</span><input id="editHold" type="number" min="5" max="600" value="${rx.holdSec}"></label>`;
+  } else {
+    fields.innerHTML = `
+      <label class="record-field"><span>Sets</span><input id="editSets" type="number" min="1" max="6" value="${rx.sets}"></label>
+      <label class="record-field"><span>Reps min</span><input id="editRepMin" type="number" min="1" max="50" value="${rx.repMin}"></label>
+      <label class="record-field"><span>Reps max</span><input id="editRepMax" type="number" min="1" max="50" value="${rx.repMax}"></label>`;
+  }
+}
+
+function saveExerciseOverride() {
+  const ex = findExercise(modalExerciseId);
+  if (!ex) return;
+  const sets = clampInt(Number(document.getElementById('editSets').value) || 1, 1, 6);
+  let override;
+  if (ex.unit === 'hold') {
+    const holdSec = clampInt(Number(document.getElementById('editHold').value) || ex.holdSec, 5, 600);
+    override = { sets, unit: 'hold', holdSec, restSec: 45 };
+  } else {
+    const repMin = clampInt(Number(document.getElementById('editRepMin').value) || ex.repMin, 1, 50);
+    const repMax = clampInt(Number(document.getElementById('editRepMax').value) || ex.repMax, repMin, 50);
+    override = { sets, unit: 'reps', repMin, repMax, restSec: 45 };
+  }
+  state.overrides[ex.id] = override;
+  saveState();
+  openExerciseDetail(ex.id);
+  renderQuest();
+  renderLibrary();
+}
+
+function resetExerciseOverride() {
+  const ex = findExercise(modalExerciseId);
+  if (!ex) return;
+  delete state.overrides[ex.id];
+  saveState();
+  openExerciseDetail(ex.id);
+  renderQuest();
+  renderLibrary();
 }
 
 function tagChip(t) {
@@ -516,17 +706,20 @@ function renderLibrary() {
     <div class="coverage-row"><span class="coverage-label">Skips</span><div class="tag-row">${cov.skips.map(tagChip).join('')}</div></div>
   `;
 
-  document.getElementById('libraryList').innerHTML = list.map((ex) => `
+  document.getElementById('libraryList').innerHTML = list.map((ex) => {
+    const rx = computePrescription(ex, state.profile);
+    return `
     <div class="lib-card" data-info="${ex.id}">
       <div class="lib-card-head">
         <span class="lib-card-name">${ex.name}</span>
         ${ex.badge ? `<span class="badge badge-${ex.badge.toLowerCase()}">${ex.badge}</span>` : ''}
       </div>
-      <div class="lib-card-sets">${ex.sets}${ex.note ? ' · ' + ex.note : ''}</div>
+      <div class="lib-card-sets">${formatPrescription(ex, rx)}${ex.note ? ' · ' + ex.note : ''}</div>
       <div class="lib-card-blurb">${ex.blurb}</div>
       <div class="tag-row">${ex.primary.map(tagChip).join('')}</div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   document.getElementById('libraryList').querySelectorAll('[data-info]').forEach((el) => {
     el.addEventListener('click', () => openExerciseDetail(el.getAttribute('data-info')));
@@ -576,18 +769,25 @@ function switchTab(tabId) {
   document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('is-active', b.getAttribute('data-tab') === tabId));
 }
 
+let manualWizardOpen = false;
+
 function renderGates() {
   const login = document.getElementById('loginGate');
+  const wizard = document.getElementById('wizardGate');
   const classGate = document.getElementById('classGate');
   const app = document.getElementById('app');
 
-  const showLogin = !state.hasSeenLogin;
-  const showClass = !showLogin && !state.className;
-  const showApp = !showLogin && !!state.className;
+  const showLogin = !manualWizardOpen && !state.hasSeenLogin;
+  const showWizard = manualWizardOpen || (!showLogin && !state.hasOnboarded);
+  const showClass = !showLogin && !showWizard && !state.className;
+  const showApp = !showLogin && !showWizard && !!state.className;
 
   login.classList.toggle('is-open', showLogin);
+  wizard.classList.toggle('is-open', showWizard);
   classGate.classList.toggle('is-open', showClass);
   app.classList.toggle('is-hidden', !showApp);
+
+  if (showWizard && wizardDraft === null) startWizard();
 }
 
 function dismissLogin() {
@@ -596,9 +796,147 @@ function dismissLogin() {
   renderAll();
 }
 
+/* ============================== WIZARD ============================== */
+
+const WIZARD_STEPS = ['goal', 'experience', 'stats', 'time', 'review'];
+let wizardStep = 0;
+let wizardDraft = null;
+
+function startWizard() {
+  wizardDraft = Object.assign({}, state.profile || defaultProfile());
+  wizardStep = 0;
+  renderWizardStep();
+}
+
+function numOrNull(v) {
+  const n = Number(v);
+  return v === '' || Number.isNaN(n) ? null : n;
+}
+
+function renderWizardDots() {
+  document.getElementById('wizardDots').innerHTML = WIZARD_STEPS.map((_, i) =>
+    `<span class="wizard-dot ${i === wizardStep ? 'is-active' : ''} ${i < wizardStep ? 'is-done' : ''}"></span>`
+  ).join('');
+}
+
+function renderWizardStep() {
+  renderWizardDots();
+  const body = document.getElementById('wizardBody');
+  const backBtn = document.getElementById('wizardBack');
+  const nextBtn = document.getElementById('wizardNext');
+  backBtn.style.visibility = wizardStep === 0 ? 'hidden' : 'visible';
+  nextBtn.textContent = WIZARD_STEPS[wizardStep] === 'review' ? 'Begin Training' : 'Next';
+
+  const step = WIZARD_STEPS[wizardStep];
+
+  if (step === 'goal') {
+    body.innerHTML = `
+      <div class="wizard-title">What's the goal?</div>
+      <div class="wizard-sub">This shapes your reps, sets, and rest across every session.</div>
+      <div class="wizard-cards">
+        ${Object.keys(GOAL_PROFILES).map((key) => `
+          <button class="wizard-card ${wizardDraft.goal === key ? 'is-selected' : ''}" data-goal="${key}">
+            <span class="wizard-card-title">${GOAL_PROFILES[key].label}</span>
+            <span class="wizard-card-sub">${GOAL_DESCRIPTIONS[key]}</span>
+          </button>`).join('')}
+      </div>`;
+    body.querySelectorAll('[data-goal]').forEach((btn) => btn.addEventListener('click', () => {
+      wizardDraft.goal = btn.getAttribute('data-goal');
+      renderWizardStep();
+    }));
+  } else if (step === 'experience') {
+    body.innerHTML = `
+      <div class="wizard-title">Training experience?</div>
+      <div class="wizard-sub">Sets adjust to match. Novices build base volume, experienced hunters get more.</div>
+      <div class="wizard-cards">
+        ${Object.keys(EXPERIENCE_PROFILES).map((key) => `
+          <button class="wizard-card ${wizardDraft.experience === key ? 'is-selected' : ''}" data-exp="${key}">
+            <span class="wizard-card-title">${EXPERIENCE_PROFILES[key].label}</span>
+          </button>`).join('')}
+      </div>`;
+    body.querySelectorAll('[data-exp]').forEach((btn) => btn.addEventListener('click', () => {
+      wizardDraft.experience = btn.getAttribute('data-exp');
+      renderWizardStep();
+    }));
+  } else if (step === 'stats') {
+    body.innerHTML = `
+      <div class="wizard-title">Body stats</div>
+      <div class="wizard-sub">Optional. Helps calibrate your profile — skip if you'd rather not.</div>
+      <div class="wizard-fields">
+        <label class="record-field"><span>Height (cm)</span><input id="wzHeight" type="number" min="100" max="250" value="${wizardDraft.heightCm ?? ''}"></label>
+        <label class="record-field"><span>Weight (kg)</span><input id="wzWeight" type="number" min="30" max="250" value="${wizardDraft.weightKg ?? ''}"></label>
+        <label class="record-field"><span>Age</span><input id="wzAge" type="number" min="10" max="100" value="${wizardDraft.age ?? ''}"></label>
+      </div>`;
+  } else if (step === 'time') {
+    const TIME_OPTIONS = [{ min: 20, label: '15-20 min' }, { min: 35, label: '30-40 min' }, { min: 55, label: '45-60 min' }, { min: 75, label: '60+ min' }];
+    body.innerHTML = `
+      <div class="wizard-title">Time per session?</div>
+      <div class="wizard-sub">Your program auto-trims to fit. Priority exercises stay, extras drop first.</div>
+      <div class="wizard-cards">
+        ${TIME_OPTIONS.map((o) => `
+          <button class="wizard-card ${wizardDraft.timeBudgetMin === o.min ? 'is-selected' : ''}" data-time="${o.min}">
+            <span class="wizard-card-title">${o.label}</span>
+          </button>`).join('')}
+      </div>`;
+    body.querySelectorAll('[data-time]').forEach((btn) => btn.addEventListener('click', () => {
+      wizardDraft.timeBudgetMin = Number(btn.getAttribute('data-time'));
+      renderWizardStep();
+    }));
+  } else if (step === 'review') {
+    const g = GOAL_PROFILES[wizardDraft.goal].label;
+    const e = EXPERIENCE_PROFILES[wizardDraft.experience].label;
+    body.innerHTML = `
+      <div class="wizard-title">Program calibrated</div>
+      <div class="wizard-sub">Every day's exercises now scale to this profile. Change it anytime in Settings.</div>
+      <div class="wizard-review">
+        <div class="wizard-review-row"><span>Goal</span><b>${g}</b></div>
+        <div class="wizard-review-row"><span>Experience</span><b>${e}</b></div>
+        <div class="wizard-review-row"><span>Session time</span><b>~${wizardDraft.timeBudgetMin} min</b></div>
+        ${wizardDraft.heightCm ? `<div class="wizard-review-row"><span>Height</span><b>${wizardDraft.heightCm} cm</b></div>` : ''}
+        ${wizardDraft.weightKg ? `<div class="wizard-review-row"><span>Weight</span><b>${wizardDraft.weightKg} kg</b></div>` : ''}
+        ${wizardDraft.age ? `<div class="wizard-review-row"><span>Age</span><b>${wizardDraft.age}</b></div>` : ''}
+      </div>`;
+  }
+}
+
+function wizardGoNext() {
+  const step = WIZARD_STEPS[wizardStep];
+  if (step === 'stats') {
+    wizardDraft.heightCm = numOrNull(document.getElementById('wzHeight').value);
+    wizardDraft.weightKg = numOrNull(document.getElementById('wzWeight').value);
+    wizardDraft.age = numOrNull(document.getElementById('wzAge').value);
+  }
+  if (step === 'review') {
+    finishWizard();
+    return;
+  }
+  wizardStep = Math.min(WIZARD_STEPS.length - 1, wizardStep + 1);
+  renderWizardStep();
+}
+
+function wizardGoBack() {
+  wizardStep = Math.max(0, wizardStep - 1);
+  renderWizardStep();
+}
+
+function finishWizard() {
+  state.profile = wizardDraft;
+  state.hasOnboarded = true;
+  manualWizardOpen = false;
+  wizardDraft = null;
+  saveState();
+  renderAll();
+}
+
+function openWizardManually() {
+  manualWizardOpen = true;
+  startWizard();
+  renderGates();
+}
+
 function renderAll() {
   renderGates();
-  if (!state.hasSeenLogin || !state.className) return;
+  if (!state.hasSeenLogin || !state.hasOnboarded || !state.className) return;
   renderStatus();
   renderQuest();
   renderLog();
@@ -673,6 +1011,16 @@ function init() {
     resetAll();
     document.getElementById('resetModal').classList.remove('is-open');
   });
+
+  document.getElementById('editProfileBtn').addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.remove('is-open');
+    openWizardManually();
+  });
+  document.getElementById('wizardNext').addEventListener('click', wizardGoNext);
+  document.getElementById('wizardBack').addEventListener('click', wizardGoBack);
+
+  document.getElementById('modalEditSave').addEventListener('click', saveExerciseOverride);
+  document.getElementById('modalEditReset').addEventListener('click', resetExerciseOverride);
 
   renderAll();
 
