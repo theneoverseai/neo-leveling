@@ -797,33 +797,6 @@ button, input {
 
 .badge-custom { background: var(--green-dim); color: var(--green); }
 
-.modal-timer {
-  margin-top: 16px;
-  padding: 18px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  text-align: center;
-}
-.timer-setrow { display: flex; align-items: center; justify-content: center; position: relative; }
-.timer-setlabel { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
-.timer-reset-btn {
-  position: absolute; right: 0;
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  font-size: 13px;
-  cursor: pointer;
-}
-.timer-display { margin: 14px 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.timer-countdown { font-family: var(--font-head); font-weight: 800; font-size: 40px; letter-spacing: 0.02em; color: var(--violet); line-height: 1; }
-.timer-phase-label { font-family: var(--font-mono); font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em; }
-.timer-controls { display: flex; gap: 8px; }
-.timer-primary-btn, .timer-pause-btn, .timer-skip-btn, .timer-next-btn { flex: 1; padding: 12px; display: none; }
-.timer-primary-btn { display: block; }
-
 .start-quest-btn {
   display: block;
   width: 100%;
@@ -846,3 +819,136 @@ button, input {
 .modal-edit-label { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 10px; }
 .modal-edit-auto { color: var(--violet); text-transform: none; letter-spacing: 0; }
 .modal-edit-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+
+/* ============================== WORKOUT PLAYER ============================== */
+
+.player-gate {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  background: var(--bg);
+  flex-direction: column;
+}
+.player-gate.is-open { display: flex; }
+
+.player-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top) + 16px) 18px 8px;
+}
+.player-close {
+  width: 34px; height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 15px;
+  cursor: pointer;
+}
+.player-top-spacer { width: 34px; flex-shrink: 0; }
+.player-dots { flex: 1; display: flex; gap: 5px; justify-content: center; }
+.player-dot {
+  width: 22px; height: 4px;
+  border-radius: 99px;
+  background: var(--border);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.player-dot.is-current { background: var(--violet); transform: scaleY(1.6); }
+.player-dot.is-done { background: color-mix(in srgb, var(--violet) 55%, var(--green)); }
+
+.player-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.player-exercise-name { font-family: var(--font-head); font-weight: 800; font-size: 25px; max-width: 320px; }
+.player-set-label { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 8px; }
+
+.player-timer-wrap { display: flex; flex-direction: column; align-items: center; margin: 44px 0 18px; }
+.player-countdown { font-family: var(--font-head); font-weight: 800; font-size: 68px; line-height: 1; color: var(--violet); letter-spacing: 0.01em; }
+.player-phase-label { font-family: var(--font-mono); font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 10px; }
+
+.player-phase-bar {
+  width: min(280px, 78vw);
+  height: 5px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.player-phase-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--violet), var(--gold));
+  border-radius: 99px;
+  transition: width 1s linear;
+}
+
+.player-note { min-height: 18px; margin-top: 16px; font-size: 12.5px; color: var(--text-dim); }
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 12px 24px calc(env(safe-area-inset-bottom) + 8px);
+}
+.player-icon-btn {
+  width: 52px; height: 52px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: none;
+}
+.player-pause-btn { width: 64px; height: 64px; font-size: 22px; background: var(--violet-dim); border-color: color-mix(in srgb, var(--violet) 45%, var(--border)); color: var(--violet); }
+.player-primary-btn {
+  padding: 18px 46px;
+  border-radius: 99px;
+  background: var(--violet);
+  color: var(--bg);
+  border: none;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 16.5px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(156, 140, 240, 0.35);
+}
+.player-primary-btn:active { transform: scale(0.97); }
+
+.player-text-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin: 0 auto 10px;
+  cursor: pointer;
+}
+
+.player-next-btn {
+  display: none;
+  margin: 0 24px calc(env(safe-area-inset-bottom) + 24px);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--violet);
+  color: var(--bg);
+  border: none;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}

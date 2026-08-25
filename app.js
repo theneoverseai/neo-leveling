@@ -623,7 +623,6 @@ function openExerciseDetail(id) {
   document.getElementById('modalWatch').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' exercise form')}`;
 
   renderModalEdit(ex, rx);
-  initTimerForExercise(ex, rx);
   modal.classList.add('is-open');
 }
 
@@ -685,28 +684,31 @@ function tagChip(t) {
   return `<span class="tag">${t}</span>`;
 }
 
-/* ============================== WORKOUT TIMER ============================== */
-/* Ephemeral, in-memory only — resets on app close by design. Guides one set at
-   a time: rep-based exercises count rest between sets; hold-based exercises
-   also count the hold itself. Single active timer at a time (no concurrent
-   supersets) — a deliberate scope call, not an oversight. */
+/* ============================== WORKOUT PLAYER ============================== */
+/* Full-screen guided session, entered via Start Quest. Ephemeral, in-memory
+   only — resets on app close by design. Guides one set at a time: rep-based
+   exercises count rest between sets; hold-based exercises also count the hold
+   itself. Single active timer at a time (no concurrent supersets) — a
+   deliberate scope call, not an oversight. */
 
 let timerExerciseId = null;
 let timerPresc = null;
 let timerSetIndex = 0;
 let timerPhase = 'idle'; // idle | work | rest | done
 let timerRemaining = 0;
+let timerPhaseTotal = 0;
 let timerRunning = false;
 let timerIntervalId = null;
+let playerOpen = false;
 
 function prescSignature(rx) {
   return [rx.sets, rx.unit, rx.repMin, rx.repMax, rx.holdSec, rx.restSec].join('|');
 }
 
-function initTimerForExercise(ex, rx) {
-  const box = document.getElementById('modalTimer');
-  if (rx.unit === 'test') { box.style.display = 'none'; return; }
-  box.style.display = 'block';
+function openPlayerForExercise(id) {
+  const ex = findExercise(id);
+  if (!ex) return;
+  const rx = computePrescription(ex, state.profile);
 
   const sameExercise = timerExerciseId === ex.id;
   const samePresc = timerPresc && prescSignature(timerPresc) === prescSignature(rx);
@@ -717,9 +719,31 @@ function initTimerForExercise(ex, rx) {
     timerSetIndex = 0;
     timerPhase = 'idle';
     timerRemaining = 0;
+    timerPhaseTotal = 0;
     timerRunning = false;
   }
-  renderTimerUI();
+
+  playerOpen = true;
+  document.getElementById('playerGate').classList.add('is-open');
+  document.getElementById('playerExerciseName').textContent = ex.name;
+  renderPlayerDots();
+  renderPlayerUI();
+}
+
+function closePlayer() {
+  playerOpen = false;
+  document.getElementById('playerGate').classList.remove('is-open');
+  renderQuest();
+}
+
+function renderPlayerDots() {
+  const wrap = document.getElementById('playerDots');
+  const { items } = todaysQuestItems();
+  const workout = items.filter((i) => i.kind === 'exercise');
+  wrap.innerHTML = workout.map((i) => {
+    const cls = i.id === timerExerciseId ? 'is-current' : (state.today.checked[i.id] ? 'is-done' : '');
+    return `<span class="player-dot ${cls}"></span>`;
+  }).join('');
 }
 
 function stopTimerInterval() {
@@ -733,48 +757,67 @@ function formatClock(sec) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function renderTimerUI() {
-  if (!timerPresc || timerExerciseId !== modalExerciseId) return;
-  const setLabel = document.getElementById('timerSetLabel');
-  const countdown = document.getElementById('timerCountdown');
-  const phaseLabel = document.getElementById('timerPhaseLabel');
-  const primaryBtn = document.getElementById('timerPrimaryBtn');
-  const pauseBtn = document.getElementById('timerPauseBtn');
-  const skipBtn = document.getElementById('timerSkipBtn');
+function renderPlayerUI() {
+  if (!playerOpen || !timerPresc) return;
+  const setLabel = document.getElementById('playerSetLabel');
+  const countdown = document.getElementById('playerCountdown');
+  const phaseLabel = document.getElementById('playerPhaseLabel');
+  const primaryBtn = document.getElementById('playerPrimaryBtn');
+  const pauseBtn = document.getElementById('playerPauseBtn');
+  const resetBtn = document.getElementById('playerResetBtn');
+  const skipBtn = document.getElementById('playerSkipBtn');
+  const nextBtn = document.getElementById('playerNextBtn');
+  const barFill = document.getElementById('playerPhaseBarFill');
+  const note = document.getElementById('playerNote');
 
   const totalSets = timerPresc.sets;
   const isHold = timerPresc.unit === 'hold';
   const setNum = Math.min(timerSetIndex + 1, totalSets);
   setLabel.textContent = timerPhase === 'done' ? `All ${totalSets} sets complete` : `Set ${setNum} of ${totalSets}`;
 
-  const nextBtn = document.getElementById('timerNextBtn');
   primaryBtn.style.display = 'none';
   pauseBtn.style.display = 'none';
+  resetBtn.style.display = 'block';
   skipBtn.style.display = 'none';
   nextBtn.style.display = 'none';
+  barFill.style.width = '0%';
+  note.textContent = '';
 
   if (timerPhase === 'idle') {
-    countdown.textContent = isHold ? formatClock(timerPresc.holdSec) : '—';
-    phaseLabel.textContent = 'Ready';
-    primaryBtn.textContent = isHold ? 'Start Hold' : `Set ${setNum} Done`;
+    if (timerPresc.unit === 'test') {
+      countdown.textContent = '—';
+      phaseLabel.textContent = 'Quick check, not timed';
+      primaryBtn.textContent = 'Mark Complete';
+    } else {
+      countdown.textContent = isHold ? formatClock(timerPresc.holdSec) : formatRepRange(timerPresc);
+      phaseLabel.textContent = isHold ? 'Ready to hold' : 'Reps — go at your pace';
+      primaryBtn.textContent = isHold ? 'Start Hold' : `Set ${setNum} Done`;
+    }
     primaryBtn.style.display = 'block';
   } else if (timerPhase === 'work') {
     countdown.textContent = formatClock(timerRemaining);
     phaseLabel.textContent = 'Hold';
     pauseBtn.style.display = 'block';
-    pauseBtn.textContent = timerRunning ? 'Pause' : 'Resume';
+    pauseBtn.textContent = timerRunning ? '⏸' : '▶';
+    barFill.style.width = Math.round(((timerPhaseTotal - timerRemaining) / timerPhaseTotal) * 100) + '%';
   } else if (timerPhase === 'rest') {
     countdown.textContent = formatClock(timerRemaining);
     phaseLabel.textContent = 'Rest';
     pauseBtn.style.display = 'block';
-    pauseBtn.textContent = timerRunning ? 'Pause' : 'Resume';
+    pauseBtn.textContent = timerRunning ? '⏸' : '▶';
     skipBtn.style.display = 'block';
+    barFill.style.width = Math.round(((timerPhaseTotal - timerRemaining) / timerPhaseTotal) * 100) + '%';
   } else if (timerPhase === 'done') {
     countdown.textContent = '✓';
     phaseLabel.textContent = 'Nice work';
+    resetBtn.style.display = 'none';
     nextBtn.style.display = 'block';
-    nextBtn.textContent = nextIncompleteWorkoutId(timerExerciseId) ? 'Complete & Next ▶' : 'Complete Workout ✓';
+    nextBtn.textContent = nextIncompleteWorkoutId(timerExerciseId) ? 'Complete & Next ▶' : 'Finish Workout ✓';
   }
+}
+
+function formatRepRange(rx) {
+  return rx.repMin === rx.repMax ? `${rx.repMin}` : `${rx.repMin}-${rx.repMax}`;
 }
 
 function nextIncompleteWorkoutId(excludeId) {
@@ -786,22 +829,20 @@ function nextIncompleteWorkoutId(excludeId) {
 function startQuest() {
   const { items } = todaysQuestItems();
   const firstIncomplete = items.find((i) => i.kind === 'exercise' && !state.today.checked[i.id]);
-  if (firstIncomplete) openExerciseDetail(firstIncomplete.id);
-  else if (items.some((i) => i.kind === 'exercise')) openExerciseDetail(items.find((i) => i.kind === 'exercise').id);
+  if (firstIncomplete) openPlayerForExercise(firstIncomplete.id);
+  else if (items.some((i) => i.kind === 'exercise')) openPlayerForExercise(items.find((i) => i.kind === 'exercise').id);
 }
 
 function timerCompleteAndNext() {
   if (!state.today.checked[timerExerciseId]) toggleItem(timerExerciseId);
   const nextId = nextIncompleteWorkoutId(null);
-  if (nextId) {
-    openExerciseDetail(nextId);
-  } else {
-    document.getElementById('exerciseModal').classList.remove('is-open');
-  }
+  if (nextId) openPlayerForExercise(nextId);
+  else closePlayer();
 }
 
 function timerPrimaryAction() {
   if (timerPhase !== 'idle') return;
+  if (timerPresc.unit === 'test') { timerCompleteAndNext(); return; }
   if (timerPresc.unit === 'hold') beginPhase('work', timerPresc.holdSec);
   else beginPhase('rest', timerPresc.restSec);
 }
@@ -809,10 +850,11 @@ function timerPrimaryAction() {
 function beginPhase(phase, seconds) {
   timerPhase = phase;
   timerRemaining = seconds;
+  timerPhaseTotal = seconds;
   timerRunning = true;
   stopTimerInterval();
   timerIntervalId = setInterval(tickTimer, 1000);
-  renderTimerUI();
+  renderPlayerUI();
 }
 
 function tickTimer() {
@@ -823,7 +865,7 @@ function tickTimer() {
     onPhaseComplete();
     return;
   }
-  renderTimerUI();
+  renderPlayerUI();
 }
 
 function onPhaseComplete() {
@@ -837,13 +879,13 @@ function advanceSet() {
   timerSetIndex += 1;
   timerRunning = false;
   timerPhase = timerSetIndex >= timerPresc.sets ? 'done' : 'idle';
-  renderTimerUI();
+  renderPlayerUI();
 }
 
 function timerTogglePause() {
   if (timerPhase !== 'work' && timerPhase !== 'rest') return;
   timerRunning = !timerRunning;
-  renderTimerUI();
+  renderPlayerUI();
 }
 
 function timerSkipRest() {
@@ -858,7 +900,7 @@ function timerReset() {
   timerPhase = 'idle';
   timerRemaining = 0;
   timerRunning = false;
-  renderTimerUI();
+  renderPlayerUI();
 }
 
 function playTimerChime() {
@@ -1333,11 +1375,12 @@ function init() {
   document.getElementById('modalEditSave').addEventListener('click', saveExerciseOverride);
   document.getElementById('modalEditReset').addEventListener('click', resetExerciseOverride);
 
-  document.getElementById('timerPrimaryBtn').addEventListener('click', timerPrimaryAction);
-  document.getElementById('timerPauseBtn').addEventListener('click', timerTogglePause);
-  document.getElementById('timerSkipBtn').addEventListener('click', timerSkipRest);
-  document.getElementById('timerResetBtn').addEventListener('click', timerReset);
-  document.getElementById('timerNextBtn').addEventListener('click', timerCompleteAndNext);
+  document.getElementById('playerPrimaryBtn').addEventListener('click', timerPrimaryAction);
+  document.getElementById('playerPauseBtn').addEventListener('click', timerTogglePause);
+  document.getElementById('playerSkipBtn').addEventListener('click', timerSkipRest);
+  document.getElementById('playerResetBtn').addEventListener('click', timerReset);
+  document.getElementById('playerNextBtn').addEventListener('click', timerCompleteAndNext);
+  document.getElementById('playerCloseBtn').addEventListener('click', closePlayer);
   document.getElementById('startQuestBtn').addEventListener('click', startQuest);
 
   renderAll();

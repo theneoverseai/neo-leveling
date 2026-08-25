@@ -1,4 +1,4 @@
-const CACHE = 'neo-leveling-v10';
+const CACHE = 'neo-leveling-v11';
 const PRECACHE = [
   './',
   './index.html',

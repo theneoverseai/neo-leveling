@@ -195,23 +195,6 @@
     <div id="modalSets" class="modal-sets"></div>
     <div id="modalBlurb" class="modal-blurb"></div>
 
-    <div id="modalTimer" class="modal-timer">
-      <div class="timer-setrow">
-        <span id="timerSetLabel" class="timer-setlabel">Set 1 of 1</span>
-        <button id="timerResetBtn" class="timer-reset-btn" aria-label="Reset timer">↺</button>
-      </div>
-      <div class="timer-display">
-        <span id="timerCountdown" class="timer-countdown">00:00</span>
-        <span id="timerPhaseLabel" class="timer-phase-label">Ready</span>
-      </div>
-      <div class="timer-controls">
-        <button id="timerPrimaryBtn" class="primary-btn timer-primary-btn">Start</button>
-        <button id="timerPauseBtn" class="ghost-btn timer-pause-btn">Pause</button>
-        <button id="timerSkipBtn" class="ghost-btn timer-skip-btn">Skip Rest</button>
-        <button id="timerNextBtn" class="primary-btn timer-next-btn">Complete &amp; Next ▶</button>
-      </div>
-    </div>
-
     <div class="modal-tags">
       <div class="modal-tag-row"><span class="modal-tag-label">Primary</span><div id="modalPrimary" class="tag-row"></div></div>
       <div class="modal-tag-row"><span class="modal-tag-label">Secondary</span><div id="modalSecondary" class="tag-row"></div></div>
@@ -269,6 +252,35 @@
       <button id="resetConfirm" class="danger-btn">Reset</button>
     </div>
   </div>
+</div>
+
+<div id="playerGate" class="player-gate">
+  <div class="player-top">
+    <button id="playerCloseBtn" class="player-close" aria-label="Exit workout">✕</button>
+    <div id="playerDots" class="player-dots"></div>
+    <div class="player-top-spacer"></div>
+  </div>
+
+  <div class="player-body">
+    <div id="playerExerciseName" class="player-exercise-name">Exercise</div>
+    <div id="playerSetLabel" class="player-set-label">Set 1 of 1</div>
+
+    <div class="player-timer-wrap">
+      <span id="playerCountdown" class="player-countdown">—</span>
+      <span id="playerPhaseLabel" class="player-phase-label">Ready</span>
+    </div>
+    <div class="player-phase-bar"><div id="playerPhaseBarFill" class="player-phase-bar-fill"></div></div>
+
+    <div id="playerNote" class="player-note"></div>
+  </div>
+
+  <div class="player-controls">
+    <button id="playerResetBtn" class="player-icon-btn" aria-label="Reset set">↺</button>
+    <button id="playerPrimaryBtn" class="player-primary-btn">Start</button>
+    <button id="playerPauseBtn" class="player-icon-btn player-pause-btn" aria-label="Pause">⏸</button>
+  </div>
+  <button id="playerSkipBtn" class="player-text-btn player-skip-btn">Skip Rest</button>
+  <button id="playerNextBtn" class="player-next-btn">Complete &amp; Next ▶</button>
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
