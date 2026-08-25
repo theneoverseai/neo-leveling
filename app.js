@@ -545,6 +545,12 @@ function renderQuest() {
   document.getElementById('questProgress').textContent = `${doneCount} / ${items.length} complete`;
   document.getElementById('questProgressFill').style.width = Math.round((doneCount / items.length) * 100) + '%';
 
+  const workoutDone = workoutItems.filter((i) => state.today.checked[i.id]).length;
+  const startBtn = document.getElementById('startQuestBtn');
+  if (workoutDone === 0) startBtn.textContent = '▶ Start Quest';
+  else if (workoutDone < workoutItems.length) startBtn.textContent = '▶ Resume Quest';
+  else startBtn.textContent = '✓ Workout Complete';
+
   wrap.querySelectorAll('[data-toggle]').forEach((el) => {
     el.addEventListener('click', () => toggleItem(el.getAttribute('data-toggle')));
   });
@@ -741,9 +747,11 @@ function renderTimerUI() {
   const setNum = Math.min(timerSetIndex + 1, totalSets);
   setLabel.textContent = timerPhase === 'done' ? `All ${totalSets} sets complete` : `Set ${setNum} of ${totalSets}`;
 
+  const nextBtn = document.getElementById('timerNextBtn');
   primaryBtn.style.display = 'none';
   pauseBtn.style.display = 'none';
   skipBtn.style.display = 'none';
+  nextBtn.style.display = 'none';
 
   if (timerPhase === 'idle') {
     countdown.textContent = isHold ? formatClock(timerPresc.holdSec) : '—';
@@ -764,6 +772,31 @@ function renderTimerUI() {
   } else if (timerPhase === 'done') {
     countdown.textContent = '✓';
     phaseLabel.textContent = 'Nice work';
+    nextBtn.style.display = 'block';
+    nextBtn.textContent = nextIncompleteWorkoutId(timerExerciseId) ? 'Complete & Next ▶' : 'Complete Workout ✓';
+  }
+}
+
+function nextIncompleteWorkoutId(excludeId) {
+  const { items } = todaysQuestItems();
+  const next = items.find((i) => i.kind === 'exercise' && i.id !== excludeId && !state.today.checked[i.id]);
+  return next ? next.id : null;
+}
+
+function startQuest() {
+  const { items } = todaysQuestItems();
+  const firstIncomplete = items.find((i) => i.kind === 'exercise' && !state.today.checked[i.id]);
+  if (firstIncomplete) openExerciseDetail(firstIncomplete.id);
+  else if (items.some((i) => i.kind === 'exercise')) openExerciseDetail(items.find((i) => i.kind === 'exercise').id);
+}
+
+function timerCompleteAndNext() {
+  if (!state.today.checked[timerExerciseId]) toggleItem(timerExerciseId);
+  const nextId = nextIncompleteWorkoutId(null);
+  if (nextId) {
+    openExerciseDetail(nextId);
+  } else {
+    document.getElementById('exerciseModal').classList.remove('is-open');
   }
 }
 
@@ -1304,6 +1337,8 @@ function init() {
   document.getElementById('timerPauseBtn').addEventListener('click', timerTogglePause);
   document.getElementById('timerSkipBtn').addEventListener('click', timerSkipRest);
   document.getElementById('timerResetBtn').addEventListener('click', timerReset);
+  document.getElementById('timerNextBtn').addEventListener('click', timerCompleteAndNext);
+  document.getElementById('startQuestBtn').addEventListener('click', startQuest);
 
   renderAll();
 

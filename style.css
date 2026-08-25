@@ -821,8 +821,26 @@ button, input {
 .timer-countdown { font-family: var(--font-head); font-weight: 800; font-size: 40px; letter-spacing: 0.02em; color: var(--violet); line-height: 1; }
 .timer-phase-label { font-family: var(--font-mono); font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em; }
 .timer-controls { display: flex; gap: 8px; }
-.timer-primary-btn, .timer-pause-btn, .timer-skip-btn { flex: 1; padding: 12px; display: none; }
+.timer-primary-btn, .timer-pause-btn, .timer-skip-btn, .timer-next-btn { flex: 1; padding: 12px; display: none; }
 .timer-primary-btn { display: block; }
+
+.start-quest-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  background: var(--violet);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(156, 140, 240, 0.25);
+}
+.start-quest-btn:active { transform: scale(0.98); }
 
 .modal-edit { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
 .modal-edit-label { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 10px; }
