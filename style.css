@@ -797,6 +797,33 @@ button, input {
 
 .badge-custom { background: var(--green-dim); color: var(--green); }
 
+.modal-timer {
+  margin-top: 16px;
+  padding: 18px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+.timer-setrow { display: flex; align-items: center; justify-content: center; position: relative; }
+.timer-setlabel { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+.timer-reset-btn {
+  position: absolute; right: 0;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+}
+.timer-display { margin: 14px 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.timer-countdown { font-family: var(--font-head); font-weight: 800; font-size: 40px; letter-spacing: 0.02em; color: var(--violet); line-height: 1; }
+.timer-phase-label { font-family: var(--font-mono); font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em; }
+.timer-controls { display: flex; gap: 8px; }
+.timer-primary-btn, .timer-pause-btn, .timer-skip-btn { flex: 1; padding: 12px; display: none; }
+.timer-primary-btn { display: block; }
+
 .modal-edit { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
 .modal-edit-label { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 10px; }
 .modal-edit-auto { color: var(--violet); text-transform: none; letter-spacing: 0; }

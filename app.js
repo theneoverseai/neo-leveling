@@ -617,6 +617,7 @@ function openExerciseDetail(id) {
   document.getElementById('modalWatch').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' exercise form')}`;
 
   renderModalEdit(ex, rx);
+  initTimerForExercise(ex, rx);
   modal.classList.add('is-open');
 }
 
@@ -676,6 +677,175 @@ function resetExerciseOverride() {
 
 function tagChip(t) {
   return `<span class="tag">${t}</span>`;
+}
+
+/* ============================== WORKOUT TIMER ============================== */
+/* Ephemeral, in-memory only — resets on app close by design. Guides one set at
+   a time: rep-based exercises count rest between sets; hold-based exercises
+   also count the hold itself. Single active timer at a time (no concurrent
+   supersets) — a deliberate scope call, not an oversight. */
+
+let timerExerciseId = null;
+let timerPresc = null;
+let timerSetIndex = 0;
+let timerPhase = 'idle'; // idle | work | rest | done
+let timerRemaining = 0;
+let timerRunning = false;
+let timerIntervalId = null;
+
+function prescSignature(rx) {
+  return [rx.sets, rx.unit, rx.repMin, rx.repMax, rx.holdSec, rx.restSec].join('|');
+}
+
+function initTimerForExercise(ex, rx) {
+  const box = document.getElementById('modalTimer');
+  if (rx.unit === 'test') { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+
+  const sameExercise = timerExerciseId === ex.id;
+  const samePresc = timerPresc && prescSignature(timerPresc) === prescSignature(rx);
+  if (!sameExercise || !samePresc) {
+    stopTimerInterval();
+    timerExerciseId = ex.id;
+    timerPresc = rx;
+    timerSetIndex = 0;
+    timerPhase = 'idle';
+    timerRemaining = 0;
+    timerRunning = false;
+  }
+  renderTimerUI();
+}
+
+function stopTimerInterval() {
+  if (timerIntervalId) { clearInterval(timerIntervalId); timerIntervalId = null; }
+}
+
+function formatClock(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function renderTimerUI() {
+  if (!timerPresc || timerExerciseId !== modalExerciseId) return;
+  const setLabel = document.getElementById('timerSetLabel');
+  const countdown = document.getElementById('timerCountdown');
+  const phaseLabel = document.getElementById('timerPhaseLabel');
+  const primaryBtn = document.getElementById('timerPrimaryBtn');
+  const pauseBtn = document.getElementById('timerPauseBtn');
+  const skipBtn = document.getElementById('timerSkipBtn');
+
+  const totalSets = timerPresc.sets;
+  const isHold = timerPresc.unit === 'hold';
+  const setNum = Math.min(timerSetIndex + 1, totalSets);
+  setLabel.textContent = timerPhase === 'done' ? `All ${totalSets} sets complete` : `Set ${setNum} of ${totalSets}`;
+
+  primaryBtn.style.display = 'none';
+  pauseBtn.style.display = 'none';
+  skipBtn.style.display = 'none';
+
+  if (timerPhase === 'idle') {
+    countdown.textContent = isHold ? formatClock(timerPresc.holdSec) : '—';
+    phaseLabel.textContent = 'Ready';
+    primaryBtn.textContent = isHold ? 'Start Hold' : `Set ${setNum} Done`;
+    primaryBtn.style.display = 'block';
+  } else if (timerPhase === 'work') {
+    countdown.textContent = formatClock(timerRemaining);
+    phaseLabel.textContent = 'Hold';
+    pauseBtn.style.display = 'block';
+    pauseBtn.textContent = timerRunning ? 'Pause' : 'Resume';
+  } else if (timerPhase === 'rest') {
+    countdown.textContent = formatClock(timerRemaining);
+    phaseLabel.textContent = 'Rest';
+    pauseBtn.style.display = 'block';
+    pauseBtn.textContent = timerRunning ? 'Pause' : 'Resume';
+    skipBtn.style.display = 'block';
+  } else if (timerPhase === 'done') {
+    countdown.textContent = '✓';
+    phaseLabel.textContent = 'Nice work';
+  }
+}
+
+function timerPrimaryAction() {
+  if (timerPhase !== 'idle') return;
+  if (timerPresc.unit === 'hold') beginPhase('work', timerPresc.holdSec);
+  else beginPhase('rest', timerPresc.restSec);
+}
+
+function beginPhase(phase, seconds) {
+  timerPhase = phase;
+  timerRemaining = seconds;
+  timerRunning = true;
+  stopTimerInterval();
+  timerIntervalId = setInterval(tickTimer, 1000);
+  renderTimerUI();
+}
+
+function tickTimer() {
+  if (!timerRunning) return;
+  timerRemaining -= 1;
+  if (timerRemaining <= 0) {
+    timerRemaining = 0;
+    onPhaseComplete();
+    return;
+  }
+  renderTimerUI();
+}
+
+function onPhaseComplete() {
+  stopTimerInterval();
+  playTimerChime();
+  if (timerPhase === 'work') beginPhase('rest', timerPresc.restSec);
+  else if (timerPhase === 'rest') advanceSet();
+}
+
+function advanceSet() {
+  timerSetIndex += 1;
+  timerRunning = false;
+  timerPhase = timerSetIndex >= timerPresc.sets ? 'done' : 'idle';
+  renderTimerUI();
+}
+
+function timerTogglePause() {
+  if (timerPhase !== 'work' && timerPhase !== 'rest') return;
+  timerRunning = !timerRunning;
+  renderTimerUI();
+}
+
+function timerSkipRest() {
+  if (timerPhase !== 'rest') return;
+  stopTimerInterval();
+  advanceSet();
+}
+
+function timerReset() {
+  stopTimerInterval();
+  timerSetIndex = 0;
+  timerPhase = 'idle';
+  timerRemaining = 0;
+  timerRunning = false;
+  renderTimerUI();
+}
+
+function playTimerChime() {
+  try {
+    if (navigator.vibrate) navigator.vibrate([180, 80, 180]);
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.55);
+  } catch (e) {
+    // Web Audio unavailable — vibration (or silence) still marks the transition
+  }
 }
 
 /* ============================== RENDER: LOG ============================== */
@@ -1129,6 +1299,11 @@ function init() {
 
   document.getElementById('modalEditSave').addEventListener('click', saveExerciseOverride);
   document.getElementById('modalEditReset').addEventListener('click', resetExerciseOverride);
+
+  document.getElementById('timerPrimaryBtn').addEventListener('click', timerPrimaryAction);
+  document.getElementById('timerPauseBtn').addEventListener('click', timerTogglePause);
+  document.getElementById('timerSkipBtn').addEventListener('click', timerSkipRest);
+  document.getElementById('timerResetBtn').addEventListener('click', timerReset);
 
   renderAll();
 
