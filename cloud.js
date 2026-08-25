@@ -5,6 +5,7 @@
 
 const DRIVE_FILE_NAME = 'neo-leveling-save.json';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+const TOKEN_CACHE_KEY = 'neoLevelingGToken';
 
 let gTokenClient = null;
 let gAccessToken = null;
@@ -14,8 +15,34 @@ let lastSyncedAt = null;
 let cloudBusy = false;
 let cloudSyncTimer = null;
 let silentAttemptInProgress = false;
+let authNote = null;
 
 function isSignedIn() { return !!gAccessToken; }
+
+/* Access tokens from the implicit token-client flow expire (~1hr) and this app
+   has no backend to hold a refresh token, so a fresh page load previously had
+   nothing to reuse and always re-prompted — the "always logged out" symptom.
+   Caching the token + its expiry means most relaunches need zero round-trip. */
+function loadCachedToken() {
+  try {
+    const raw = localStorage.getItem(TOKEN_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed.access_token || !parsed.expires_at || Date.now() >= parsed.expires_at) return null;
+    return parsed;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveCachedToken(accessToken, expiresInSec) {
+  const expires_at = Date.now() + Math.max(0, (expiresInSec || 3600) - 60) * 1000;
+  localStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify({ access_token: accessToken, expires_at }));
+}
+
+function clearCachedToken() {
+  localStorage.removeItem(TOKEN_CACHE_KEY);
+}
 
 function initGoogle() {
   if (typeof GOOGLE_CLIENT_ID === 'undefined' || !GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.indexOf('REPLACE_WITH') === 0) {
@@ -34,16 +61,29 @@ function initGoogle() {
       silentAttemptInProgress = false;
       if (resp.error) {
         if (!wasSilent) setLoginStatus('Sign-in failed. Try again.');
+        if (wasSilent) { authNote = 'Signed out — tap Sign in with Google to reconnect'; refreshCloudStatusUI(); }
         return;
       }
-      gAccessToken = resp.access_token;
-      await fetchUserEmail();
-      await syncFromDriveThenProceed();
+      saveCachedToken(resp.access_token, resp.expires_in);
+      await onTokenObtained(resp.access_token);
     }
   });
 
   wireGoogleButtons();
-  attemptSilentSignIn();
+
+  const cached = loadCachedToken();
+  if (cached) {
+    onTokenObtained(cached.access_token);
+  } else {
+    attemptSilentSignIn();
+  }
+}
+
+async function onTokenObtained(accessToken) {
+  gAccessToken = accessToken;
+  authNote = null;
+  await fetchUserEmail();
+  await syncFromDriveThenProceed();
 }
 
 function wireGoogleButtons() {
@@ -94,11 +134,19 @@ function setLoginStatus(msg) {
   if (el) el.textContent = msg;
 }
 
+function handleAuthFailure() {
+  gAccessToken = null;
+  clearCachedToken();
+  authNote = 'Session expired — tap Sign in with Google to reconnect';
+  refreshCloudStatusUI();
+}
+
 async function driveFindFile() {
   const q = encodeURIComponent(`name='${DRIVE_FILE_NAME}'`);
   const r = await fetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,modifiedTime)&q=${q}`, {
     headers: { Authorization: 'Bearer ' + gAccessToken }
   });
+  if (r.status === 401) { handleAuthFailure(); throw new Error('auth expired'); }
   if (!r.ok) throw new Error('drive list failed');
   const j = await r.json();
   return (j.files && j.files[0]) || null;
@@ -108,6 +156,7 @@ async function driveReadFile(fileId) {
   const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
     headers: { Authorization: 'Bearer ' + gAccessToken }
   });
+  if (r.status === 401) { handleAuthFailure(); throw new Error('auth expired'); }
   if (!r.ok) throw new Error('drive read failed');
   return r.json();
 }
@@ -123,6 +172,7 @@ async function driveCreateFile(payload) {
     headers: { Authorization: 'Bearer ' + gAccessToken, 'Content-Type': `multipart/related; boundary=${boundary}` },
     body
   });
+  if (r.status === 401) { handleAuthFailure(); throw new Error('auth expired'); }
   if (!r.ok) throw new Error('drive create failed');
   const j = await r.json();
   return j.id;
@@ -134,6 +184,7 @@ async function driveUpdateFile(fileId, payload) {
     headers: { Authorization: 'Bearer ' + gAccessToken, 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
+  if (r.status === 401) { handleAuthFailure(); throw new Error('auth expired'); }
   if (!r.ok) throw new Error('drive update failed');
 }
 
@@ -196,6 +247,8 @@ function signOutGoogle() {
   gAccessToken = null;
   gUserEmail = null;
   cloudFileId = null;
+  authNote = null;
+  clearCachedToken();
   refreshCloudStatusUI();
 }
 
@@ -220,7 +273,7 @@ function refreshCloudStatusUI() {
     signedInActions.style.display = 'flex';
   } else {
     dot.classList.remove('is-on');
-    text.textContent = 'Not signed in';
+    text.textContent = authNote || 'Not signed in';
     syncedAt.textContent = '';
     signInBtn.style.display = 'block';
     signedInActions.style.display = 'none';

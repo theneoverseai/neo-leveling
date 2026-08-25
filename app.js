@@ -94,6 +94,13 @@ const EXERCISES = {
       primary: ['Grip', 'Forearms'], secondary: ['Shoulders', 'Lats'], notTargeted: ['Chest', 'Legs'],
       blurb: 'Pure grip and shoulder stability endurance. The base every pull up and hang-dependent move relies on.',
       stat: 'grip'
+    },
+    {
+      id: 'pull-bicep-curl', name: 'Band Bicep Curl', note: 'standing, controlled tempo',
+      unit: 'reps', baseSets: 3, repMin: 10, repMax: 15, goalScaled: true,
+      primary: ['Biceps'], secondary: ['Forearms'], notTargeted: ['Back', 'Chest', 'Legs'],
+      blurb: 'Direct arm isolation. Pull ups and rows train biceps only as a secondary mover — this adds the direct volume research shows drives extra arm size beyond compounds alone.',
+      stat: 'strength'
     }
   ],
   Legs: [
