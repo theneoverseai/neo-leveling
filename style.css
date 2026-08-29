@@ -191,6 +191,12 @@ button, input {
   border-radius: var(--radius-md);
   padding: 3px;
   transition: border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+  animation: itemRise 0.4s var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@keyframes itemRise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .quest-item.is-checked { border-color: color-mix(in srgb, var(--violet) 45%, var(--border)); background: var(--violet-dim); }
 
@@ -206,7 +212,14 @@ button, input {
   color: var(--bg);
   transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out);
 }
-.is-checked .checkbox { background: var(--violet); border-color: var(--violet); color: var(--bg); }
+.is-checked .checkbox { background: var(--violet); border-color: var(--violet); color: var(--bg); animation: checkPulse 0.35s var(--ease-out); }
+@keyframes checkPulse {
+  0% { transform: scale(0.75); }
+  55% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.quest-check { -webkit-tap-highlight-color: transparent; }
+.quest-check:active .checkbox { transform: scale(0.88); }
 
 .quest-item-body { min-width: 0; }
 .quest-item-title { display: flex; align-items: center; gap: 8px; }
@@ -439,12 +452,15 @@ button, input {
   inset: 0;
   background: rgba(6, 5, 10, 0.72);
   backdrop-filter: blur(4px);
-  display: none;
+  display: flex;
   align-items: flex-end;
   justify-content: center;
   z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s var(--ease-out), visibility 0.25s var(--ease-out), backdrop-filter 0.25s var(--ease-out);
 }
-.modal.is-open { display: flex; }
+.modal.is-open { opacity: 1; visibility: visible; }
 
 .modal-card {
   width: 100%;
@@ -455,14 +471,16 @@ button, input {
   border-top-right-radius: var(--radius-lg);
   padding: 26px 22px calc(env(safe-area-inset-bottom) + 24px);
   box-shadow: var(--shadow-soft);
-  animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(28px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.35s var(--ease-out), opacity 0.3s var(--ease-out);
   position: relative;
 }
+.modal.is-open .modal-card { transform: translateY(0) scale(1); opacity: 1; }
 @media (min-width: 560px) {
   .modal { align-items: center; }
   .modal-card { border-radius: var(--radius-lg); }
 }
-@keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .modal-card-sm { max-width: 380px; text-align: center; }
 
@@ -507,14 +525,19 @@ button, input {
 /* ============================== LOGIN GATE ============================== */
 
 .login-gate {
-  display: none;
+  display: block;
   position: fixed;
   inset: 0;
   z-index: 200;
   background: var(--bg);
   overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s var(--ease-out), visibility 0.35s var(--ease-out);
 }
-.login-gate.is-open { display: block; }
+.login-gate.is-open { opacity: 1; visibility: visible; }
+.login-gate .login-content { transform: translateY(18px); transition: transform 0.45s var(--ease-out); }
+.login-gate.is-open .login-content { transform: translateY(0); }
 
 .login-bg { position: absolute; inset: 0; overflow: hidden; }
 
@@ -711,15 +734,20 @@ button, input {
 /* ============================== ONBOARDING WIZARD ============================== */
 
 .wizard-gate {
-  display: none;
+  display: flex;
   position: fixed;
   inset: 0;
   z-index: 190;
   background: var(--bg);
   flex-direction: column;
   padding: calc(env(safe-area-inset-top) + 20px) 22px calc(env(safe-area-inset-bottom) + 20px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease-out), visibility 0.3s var(--ease-out);
 }
-.wizard-gate.is-open { display: flex; }
+.wizard-gate.is-open { opacity: 1; visibility: visible; }
+.wizard-gate .wizard-body { transform: translateY(14px); transition: transform 0.35s var(--ease-out); }
+.wizard-gate.is-open .wizard-body { transform: translateY(0); }
 
 .wizard-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 8px; }
 .wizard-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background 0.2s var(--ease-out), transform 0.2s var(--ease-out); }
@@ -829,14 +857,19 @@ button, input {
 /* ============================== WORKOUT PLAYER ============================== */
 
 .player-gate {
-  display: none;
+  display: flex;
   position: fixed;
   inset: 0;
   z-index: 250;
   background: var(--bg);
   flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease-out), visibility 0.3s var(--ease-out);
 }
-.player-gate.is-open { display: flex; }
+.player-gate.is-open { opacity: 1; visibility: visible; }
+.player-gate .player-body { transform: translateY(14px) scale(0.98); transition: transform 0.35s var(--ease-out); }
+.player-gate.is-open .player-body { transform: translateY(0) scale(1); }
 
 .player-top {
   display: flex;

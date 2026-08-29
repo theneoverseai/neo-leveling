@@ -536,10 +536,10 @@ function renderQuest() {
   const questItems = items.filter((i) => i.kind === 'quest');
 
   const wrap = document.getElementById('workoutList');
-  wrap.innerHTML = workoutItems.map((i) => exerciseRow(i.ref, state.today.checked[i.id], i.presc)).join('');
+  wrap.innerHTML = workoutItems.map((i, idx) => exerciseRow(i.ref, state.today.checked[i.id], i.presc, idx)).join('');
 
   const dq = document.getElementById('dailyQuestList');
-  dq.innerHTML = questItems.map((i) => questRow(i.ref, state.today.checked[i.id])).join('');
+  dq.innerHTML = questItems.map((i, idx) => questRow(i.ref, state.today.checked[i.id], idx)).join('');
 
   const doneCount = items.filter((i) => state.today.checked[i.id]).length;
   document.getElementById('questProgress').textContent = `${doneCount} / ${items.length} complete`;
@@ -565,10 +565,10 @@ function renderQuest() {
   });
 }
 
-function exerciseRow(ex, checked, presc) {
+function exerciseRow(ex, checked, presc, index) {
   const rx = presc || computePrescription(ex, state.profile);
   return `
-    <div class="quest-item ${checked ? 'is-checked' : ''}">
+    <div class="quest-item ${checked ? 'is-checked' : ''}" style="--i:${index || 0}">
       <div class="quest-check" data-toggle="${ex.id}">
         <span class="checkbox">${checked ? '✓' : ''}</span>
         <div class="quest-item-body">
@@ -584,9 +584,9 @@ function exerciseRow(ex, checked, presc) {
     </div>`;
 }
 
-function questRow(q, checked) {
+function questRow(q, checked, index) {
   return `
-    <div class="quest-item ${checked ? 'is-checked' : ''}">
+    <div class="quest-item ${checked ? 'is-checked' : ''}" style="--i:${index || 0}">
       <div class="quest-check" data-toggle="${q.id}">
         <span class="checkbox">${checked ? '✓' : ''}</span>
         <div class="quest-item-body">
