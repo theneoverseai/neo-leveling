@@ -783,6 +783,10 @@ function renderPlayerUI() {
   barFill.style.width = '0%';
   note.textContent = '';
 
+  countdown.className = 'player-countdown' + (timerPhase !== 'idle' ? ` is-${timerPhase}` : '');
+  phaseLabel.className = 'player-phase-label' + (timerPhase !== 'idle' ? ` is-${timerPhase}` : '');
+  barFill.className = 'player-phase-bar-fill' + (timerPhase === 'rest' ? ' is-rest' : '');
+
   if (timerPhase === 'idle') {
     if (timerPresc.unit === 'test') {
       countdown.textContent = '—';

@@ -7,6 +7,10 @@
   --text-dim: #726C82;
   --violet: #9C8CF0;
   --violet-dim: rgba(156, 140, 240, 0.16);
+  --magenta: #D66FC9;
+  --magenta-dim: rgba(214, 111, 201, 0.16);
+  --cyan: #6FE3E8;
+  --cyan-dim: rgba(111, 227, 232, 0.16);
   --gold: #D6B677;
   --gold-dim: rgba(214, 182, 119, 0.16);
   --red: #C97A8A;
@@ -19,7 +23,9 @@
   --font-head: 'Manrope', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-soft: 0 8px 24px rgba(20, 12, 40, 0.45);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 * { box-sizing: border-box; }
@@ -53,7 +59,7 @@ button, input {
 .app.is-hidden { display: none; }
 
 .tab-panels { flex: 1; padding: 20px 18px 100px; max-width: 560px; width: 100%; margin: 0 auto; }
-.tab-panel { display: none; animation: fadeIn 0.25s ease; }
+.tab-panel { display: none; animation: fadeIn 0.25s var(--ease-out); }
 .tab-panel.is-active { display: block; }
 
 @keyframes fadeIn {
@@ -118,7 +124,7 @@ button, input {
   font-size: 16px;
   line-height: 1;
   flex-shrink: 0;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: border-color 0.15s var(--ease-out), color 0.15s var(--ease-out);
 }
 .icon-btn:active { border-color: var(--violet); color: var(--violet); }
 
@@ -133,7 +139,7 @@ button, input {
 .xp-bar-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--violet), color-mix(in srgb, var(--violet) 60%, var(--gold)));
+  background: linear-gradient(90deg, var(--violet), var(--magenta) 70%, var(--cyan));
   border-radius: 99px;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -143,7 +149,7 @@ button, input {
 .stat-row { display: flex; align-items: center; gap: 10px; }
 .stat-name { font-size: 11.5px; color: var(--text-dim); width: 68px; flex-shrink: 0; }
 .stat-bar { flex: 1; height: 5px; background: var(--panel-2); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
-.stat-bar-fill { height: 100%; width: 0%; border-radius: 99px; transition: width 0.4s ease; }
+.stat-bar-fill { height: 100%; width: 0%; border-radius: 99px; transition: width 0.4s var(--ease-out); }
 .stat-strength { background: var(--violet); }
 .stat-grip { background: var(--gold); }
 .stat-endurance { background: var(--green); }
@@ -172,7 +178,7 @@ button, input {
 .quest-progress-wrap { text-align: right; flex-shrink: 0; }
 .quest-progress-label { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
 .quest-progress-bar { width: 74px; height: 5px; background: var(--panel-2); border-radius: 99px; margin-top: 6px; overflow: hidden; border: 1px solid var(--border); }
-.quest-progress-fill { height: 100%; width: 0%; background: var(--violet); border-radius: 99px; transition: width 0.4s ease; }
+.quest-progress-fill { height: 100%; width: 0%; background: var(--violet); border-radius: 99px; transition: width 0.4s var(--ease-out); }
 
 .quest-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -184,7 +190,7 @@ button, input {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 3px;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
 }
 .quest-item.is-checked { border-color: color-mix(in srgb, var(--violet) 45%, var(--border)); background: var(--violet-dim); }
 
@@ -198,7 +204,7 @@ button, input {
   display: flex; align-items: center; justify-content: center;
   font-size: 13px;
   color: var(--bg);
-  transition: all 0.15s ease;
+  transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out);
 }
 .is-checked .checkbox { background: var(--violet); border-color: var(--violet); color: var(--bg); }
 
@@ -307,7 +313,7 @@ button, input {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out);
 }
 .lib-tab.is-active { background: var(--violet-dim); border-color: color-mix(in srgb, var(--violet) 45%, var(--border)); color: var(--violet); }
 
@@ -340,7 +346,7 @@ button, input {
   border-radius: var(--radius-md);
   padding: 14px;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s var(--ease-out);
 }
 .lib-card:active { border-color: var(--violet); }
 .lib-card-head { display: flex; align-items: center; gap: 8px; }
@@ -362,7 +368,7 @@ button, input {
   font-size: 14px;
   color: var(--text);
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s var(--ease-out);
 }
 .record-field input:focus { border-color: var(--violet); }
 
@@ -422,7 +428,7 @@ button, input {
   padding: 9px 0;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: color 0.15s var(--ease-out), background 0.15s var(--ease-out);
 }
 .nav-btn.is-active { color: var(--violet); background: var(--violet-dim); }
 
@@ -650,8 +656,8 @@ button, input {
   font-weight: 600;
   font-size: 14.5px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  transition: transform 0.12s ease;
+  box-shadow: 0 6px 20px rgba(20, 12, 40, 0.5);
+  transition: transform 0.12s var(--ease-out);
 }
 .google-signin-btn:active { transform: scale(0.97); }
 .google-g {
@@ -716,7 +722,7 @@ button, input {
 .wizard-gate.is-open { display: flex; }
 
 .wizard-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 8px; }
-.wizard-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background 0.2s ease, transform 0.2s ease; }
+.wizard-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background 0.2s var(--ease-out), transform 0.2s var(--ease-out); }
 .wizard-dot.is-active { background: var(--violet); transform: scale(1.3); }
 .wizard-dot.is-done { background: color-mix(in srgb, var(--violet) 45%, var(--border)); }
 
@@ -736,7 +742,7 @@ button, input {
   flex-direction: column;
   gap: 4px;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  transition: border-color 0.15s var(--ease-out), background 0.15s var(--ease-out), transform 0.1s var(--ease-out);
 }
 .wizard-card:active { transform: scale(0.98); }
 .wizard-card.is-selected { border-color: var(--violet); background: var(--violet-dim); }
@@ -785,7 +791,7 @@ button, input {
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out);
 }
 .weekday-chip.is-selected { background: var(--violet); border-color: var(--violet); color: var(--bg); }
 
@@ -854,7 +860,7 @@ button, input {
   width: 22px; height: 4px;
   border-radius: 99px;
   background: var(--border);
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s var(--ease-out), transform 0.2s var(--ease-out);
 }
 .player-dot.is-current { background: var(--violet); transform: scaleY(1.6); }
 .player-dot.is-done { background: color-mix(in srgb, var(--violet) 55%, var(--green)); }
@@ -870,11 +876,33 @@ button, input {
 }
 
 .player-exercise-name { font-family: var(--font-head); font-weight: 800; font-size: 25px; max-width: 320px; }
-.player-set-label { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 8px; }
+.player-set-label {
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-top: 8px;
+}
+.player-set-label::before { content: '[ '; }
+.player-set-label::after { content: ' ]'; }
 
 .player-timer-wrap { display: flex; flex-direction: column; align-items: center; margin: 44px 0 18px; }
-.player-countdown { font-family: var(--font-head); font-weight: 800; font-size: 68px; line-height: 1; color: var(--violet); letter-spacing: 0.01em; }
-.player-phase-label { font-family: var(--font-mono); font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 10px; }
+.player-countdown {
+  font-family: var(--font-head); font-weight: 800; font-size: 68px; line-height: 1;
+  color: var(--violet); letter-spacing: 0.01em;
+  transition: color 0.3s var(--ease-out);
+}
+.player-countdown.is-work { color: var(--cyan); }
+.player-countdown.is-rest { color: var(--magenta); }
+.player-countdown.is-done { color: var(--gold); }
+
+.player-phase-label {
+  font-family: var(--font-mono); font-size: 12px; color: var(--violet);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-top: 10px;
+  transition: color 0.3s var(--ease-out);
+}
+.player-phase-label::before { content: '· '; }
+.player-phase-label::after { content: ' ·'; }
+.player-phase-label.is-work { color: var(--cyan); }
+.player-phase-label.is-rest { color: var(--magenta); }
+.player-phase-label.is-done { color: var(--gold); }
 
 .player-phase-bar {
   width: min(280px, 78vw);
@@ -887,11 +915,11 @@ button, input {
 .player-phase-bar-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--violet), var(--gold));
+  background: linear-gradient(90deg, var(--violet), var(--cyan));
   border-radius: 99px;
-  transition: width 1s linear;
+  transition: background 0.3s var(--ease-out), width 1s linear;
 }
-
+.player-phase-bar-fill.is-rest { background: linear-gradient(90deg, var(--violet), var(--magenta)); }
 .player-note { min-height: 18px; margin-top: 16px; font-size: 12.5px; color: var(--text-dim); }
 
 .player-controls {
